@@ -1,7 +1,20 @@
 <?php
 
+  // Please do not change anything here; these values will be overwritten
+  // in the next pull.
+  // You should copy this file to /etc/radarrlist/settings.inc.php and
+  // do your individual settings there.
+
+  // database connection settings
+  $db['host'] = "localhost";
+  $db['user'] = "database";
+  $db['pass'] = "password";
+  $db['db']   = "radarrlist";
+  $db['port'] = null;
+  $db['sock'] = "/var/run/mysqld/mysqld.sock";
+
   // tmdb api to use
-  $API = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjODBkNTJlMzI1YjkwNmVlMTVjOGE5MDViMmVjNThhMCIsInN1YiI6IjU2ODc0MWI4YzNhMzY4NGJlOTAyMDRiMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.iJhJ17cAUpcYQojVan9HAUdpQbsvDw3-lH2_7CcRqkw'
+  $API = 'api-key';
   
   // get settings from file
   if(is_file('/etc/radarrlist/settings.inc.php'))
