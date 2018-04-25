@@ -1,6 +1,6 @@
 <?php
 
-  require_once('/etc/tmdb/settings.inc.php');
+  require_once(dirname(__FILE__)."/settings.inc.php");
 
   //////////////////////////////////////////////////////////
   // CONSTANTS
