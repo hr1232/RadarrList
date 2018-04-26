@@ -7,11 +7,8 @@
   // connect to database
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
-  // inguest companies
-  $json = getCompanyDump();
-
-  // inguest people
-  $json = getPeopleDump();
+  // inguest collections
+  $json = getCollectionDump();
   $list = array();
   $rows = array();
   foreach ($json as $value) {
@@ -22,19 +19,37 @@
       $row[] = "'".$db->escape_string($value->name)."'";
     else
       $row[] = "null";
-    if (isset($value->imdb_id) && strlen($value->imdb_id))
-      $row[] = "'".$db->escape_string($value->imdb_id)."'";
-    else
-      $row[] = "null";
     $rows[] = "(".implode(',',$row).")";
     if (count($rows) == 5000) {
-      $db->query("INSERT IGNORE INTO persons (p_id, p_name, p_imdb) VALUES ".implode(', ',$rows));
+      $db->query("INSERT INTO collections (collectionId, collectionTitle) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE collectionName=VALUES(collectionTitle)");
       $rows = array();
     }
   }
   if (count($rows) > 0)
-    $db->query("INSERT IGNORE INTO persons (p_id, p_name, p_imdb) VALUES ".implode(', ',$rows));
-  $db->query("DELETE FROM persons WHERE p_id NOT IN (".implode(',',$list).")");
+    $db->query("INSERT INTO collections (collectionId, collectionTitle) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE collectionName=VALUES(collectionTitle)");
+  $db->query("DELETE FROM collections WHERE collectionId NOT IN (".implode(',',$list).")");
+
+  // inguest companies
+  $json = getCompanyDump();
+  $list = array();
+  $rows = array();
+  foreach ($json as $value) {
+    $list[] = $value->id;
+    $row = array();
+    $row[] = $value->id;
+    if (isset($value->name) && strlen($value->name))
+      $row[] = "'".$db->escape_string($value->name)."'";
+    else
+      $row[] = "null";
+    $rows[] = "(".implode(',',$row).")";
+    if (count($rows) == 5000) {
+      $db->query("INSERT INTO companies (companyId, companyName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE companyName=VALUES(companyName)");
+      $rows = array();
+    }
+  }
+  if (count($rows) > 0)
+    $db->query("INSERT INTO companies (companyId, companyName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE companyName=VALUES(companyName)");
+  $db->query("DELETE FROM companies WHERE companyId NOT IN (".implode(',',$list).")");
 
   // inguest keywords
   $json = getKeywordDump();
@@ -50,13 +65,13 @@
       $row[] = "null";
     $rows[] = "(".implode(',',$row).")";
     if (count($rows) == 5000) {
-      $db->query("INSERT IGNORE INTO keywords (k_id, k_keyword) VALUES ".implode(', ',$rows));
+      $db->query("INSERT INTO keywords (keywordId, keywordName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE keywordName=VALUES(keywordName)");
       $rows = array();
     }
   }
   if (count($rows) > 0)
-    $db->query("INSERT IGNORE INTO keywords (k_id, k_keyword) VALUES ".implode(', ',$rows));
-  $db->query("DELETE FROM keywords WHERE k_id NOT IN (".implode(',',$list).")");
+    $db->query("INSERT INTO keywords (keywordId, keywordName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE keywordName=VALUES(keywordName)");
+  $db->query("DELETE FROM keywords WHERE keywordId NOT IN (".implode(',',$list).")");
 
   // inguest tv networks
   $json = getNetworkDump();
@@ -72,19 +87,91 @@
       $row[] = "null";
     $rows[] = "(".implode(',',$row).")";
     if (count($rows) == 5000) {
-      $db->query("INSERT IGNORE INTO networks (n_id, n_name) VALUES ".implode(', ',$rows));
+      $db->query("INSERT INTO networks (networkId, networkName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE networkName=VALUES(networkName)");
       $rows = array();
     }
   }
   if (count($rows) > 0)
-    $db->query("INSERT IGNORE INTO networks (n_id, n_name, n_country, n_homepage, n_headquaters) VALUES ".implode(', ',$rows));
-  $db->query("DELETE FROM networks WHERE n_id NOT IN (".implode(',',$list).")");
+    $db->query("INSERT INTO networks (networkId, networkName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE networkName=VALUES(networkName)");
+  $db->query("DELETE FROM networks WHERE networkId NOT IN (".implode(',',$list).")");
+
+  // inguest people
+  $json = getPeopleDump();
+  $list = array();
+  $rows = array();
+  foreach ($json as $value) {
+    $list[] = $value->id;
+    $row = array();
+    $row[] = $value->id;
+    if (isset($value->name) && strlen($value->name))
+      $row[] = "'".$db->escape_string($value->name)."'";
+    else
+      $row[] = "null";
+    if (isset($value->popularity) && is_numeric($value->popularity))
+      $row[] = $value->popularity;
+    else
+      $row[] = 0;
+    $rows[] = "(".implode(',',$row).")";
+    if (count($rows) == 5000) {
+      $db->query("INSERT INTO persons (personId, personName, personPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity)");
+      $rows = array();
+    }
+  }
+  if (count($rows) > 0)
+    $db->query("INSERT INTO persons (personId, personName, personPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity)");
+  $db->query("DELETE FROM persons WHERE personId NOT IN (".implode(',',$list).")");
 
   // inguest tv series
   $json = getTvDump();
+  $list = array();
+  $rows = array();
+  foreach ($json as $value) {
+    $list[] = $value->id;
+    $row = array();
+    $row[] = $value->id;
+    if (isset($value->original_name) && strlen($value->original_name))
+      $row[] = "'".$db->escape_string($value->original_name)."'";
+    else
+      $row[] = "null";
+    if (isset($value->popularity) && is_numeric($value->popularity))
+      $row[] = $value->popularity;
+    else
+      $row[] = 0;
+    $rows[] = "(".implode(',',$row).")";
+    if (count($rows) == 5000) {
+      $db->query("INSERT INTO series (seriesId, seriesOriginalTitle, seriesPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE seriesOriginalTitle=VALUES(seriesOriginalTitle), seriesPopularity=VALUES(seriesPopularity)");
+      $rows = array();
+    }
+  }
+  if (count($rows) > 0)
+    $db->query("INSERT INTO series (seriesId, seriesOriginalTitle, seriesPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE seriesOriginalTitle=VALUES(seriesOriginalTitle), seriesPopularity=VALUES(seriesPopularity)");
+  $db->query("DELETE FROM series WHERE seriesId NOT IN (".implode(',',$list).")");
 
   // inguest movies
   $json = getMovieDump();
+  $list = array();
+  $rows = array();
+  foreach ($json as $value) {
+    $list[] = $value->id;
+    $row = array();
+    $row[] = $value->id;
+    if (isset($value->original_title) && strlen($value->original_title))
+      $row[] = "'".$db->escape_string($value->original_title)."'";
+    else
+      $row[] = "null";
+    if (isset($value->popularity) && is_numeric($value->popularity))
+      $row[] = $value->popularity;
+    else
+      $row[] = 0;
+    $rows[] = "(".implode(',',$row).")";
+    if (count($rows) == 5000) {
+      $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity)");
+      $rows = array();
+    }
+  }
+  if (count($rows) > 0)
+    $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity)");
+  $db->query("DELETE FROM movies WHERE movieId NOT IN (".implode(',',$list).")");
 
   // disconnect from database
   $db->close();
