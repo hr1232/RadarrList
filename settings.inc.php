@@ -14,7 +14,7 @@
   $db['sock'] = "/var/run/mysqld/mysqld.sock";
 
   // tmdb api to use
-  $API = 'api-key';
+  $api = 'api-key';
   
   // get settings from file
   if(is_file('/etc/radarrlist/settings.inc.php'))
