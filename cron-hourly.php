@@ -7,22 +7,23 @@
   // connect to database
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
-  // get time for current and last update
-  $thisupdate = date('Y-m-d H:i:s');
-  $lastupdate = getLastUpdate();
+  // remember current time
+  $thisupdate = gmdate('Y-m-d H:i:s');
 
   // get list of updated movies
-  $updates = getMovieUpdates($lastupdate);
+  $updates = getMovieUpdates();
+  $i = 1;
   foreach ($updates as $update) {
+    echo ($i++)."/".count($updates).": ";
     $movie = getMovie($update);
     updateMovie($movie);
   }
 
   // get list of updated series
-  $updates = getTvUpdates($lastupdate);
+  //$updates = getTvUpdates();
 
   // get list of updated persons
-  $updates = getPersonUpdates($lastupdate);
+  //$updates = getPersonUpdates();
 
   // disconnect from database
   $db->close();

@@ -33,22 +33,13 @@
 
   // function to get and decode json objects from the web
   function getJson($url) {
-    if ($file = json_decode(file_get_contents($url))) {
-      return $file;
-    } else
+    if ($file = @file_get_contents($url))
+      if ($file = @json_decode($file))
+        return $file;
+      else
+        return false;
+    else
       return false;
-  }
-
-  // functions to determin the time when the last update ran
-  function getLastUpdate() {
-    global $db;
-    $result = $db->query("SELECT DATE_FORMAT(IF(MAX(lastUpdate) IS NULL,DATE_SUB(NOW(),INTERVAL 1 HOUR),MAX(lastUpdate)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM (
-                            (SELECT MAX(movieUpdated) AS lastUpdate FROM movies) UNION
-                            (SELECT MAX(seriesUpdated) AS lastUpdate FROM series) UNION
-                            (SELECT MAX(personUpdated) AS lastUpdate FROM persons)
-                          ) AS temp");
-    $row = $result->fetch_array(MYSQLI_ASSOC);
-    return $row['lastUpdate'];
   }
 
   //////////////////////////////////////////////////////////
@@ -57,9 +48,12 @@
   //////////////////////////////////////////////////////////
 
   // function to retrieve all movies updated since the last run and up to 500 movies that have never been updated
-  function getMovieUpdates($startTime) {
+  function getMovieUpdates() {
     global $api;
     global $db;
+    $result = $db->query("SELECT DATE_FORMAT(IF(MAX(movieUpdated) IS NULL,DATE_SUB(NOW(),INTERVAL 3 HOUR),MAX(movieUpdated)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM movies");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
+    $startTime = $row['lastUpdate'];
     $list = array();
     $page = 1;
     do {
@@ -68,7 +62,7 @@
           $list[] = $value->id;
       }
     } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY moviePopularity DESC LIMIT 500");
+    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 100");
     while ($row = $result->fetch_array(MYSQLI_ASSOC))
       $list[] = $row['movieId'];
     return $list;
@@ -113,7 +107,7 @@
   // function to retrieve information on a movie
   function getMovie($id) {
     global $api;
-    if ($result = getJson("https://api.themoviedb.org/3/movie/".$id."?api_key=".$api."&language=en-US&append_to_response=keywords"))
+    if ($result = getJson("https://api.themoviedb.org/3/movie/".$id."?api_key=".$api."&language=en-US&append_to_response=keywords,credits,changes"))
       return $result;
     else
       return false;
@@ -147,19 +141,67 @@
   function updateCompany($company) {
     global $db;
     global $thisupdate;
-    return true;
+    $row = array();
+    $row[] = $company->id;
+    if (isset($company->logo_path) && strlen($company->logo_path))
+      $row[] = "'".$db->escape_string($company->logo_path)."'";
+    else
+      $row[] = "null"; 
+    if (isset($company->origin_country) && strlen($company->origin_country))
+      $row[] = "'".$db->escape_string($company->origin_country)."'";
+    else
+      $row[] = "null"; 
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT IGNORE INTO countries (countryCode) VALUES ('".$db->escape_string($company->origin_country)."')"))
+      if ($db->query("INSERT INTO companies (companyId, companyLogo, companyCountry, companyUpdated) VALUES (
+                        ".implode(', ',$row)."
+                      ) ON DUPLICATE KEY UPDATE
+                      companyLogo=VALUES(companyLogo),
+                      companyCountry=VALUES(companyCountry),
+                      companyUpdated=VALUES(companyUpdated)"))
+        return true;
+      else
+        return false;
   }
 
   function updateCountry($country) {
     global $db;
     global $thisupdate;
-    return true;
+    $row = array();
+    $row[] = "'".$country->iso_3166_1."'";
+    if (isset($country->name) && strlen($country->name))
+      $row[] = "'".$db->escape_string($country->name)."'";
+    else
+      $row[] = "null"; 
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT INTO countries (countryCode, countryName, countryUpdated) VALUES (
+                      ".implode(', ',$row)."
+                    ) ON DUPLICATE KEY UPDATE
+                    countryName=VALUES(countryName),
+                    countryUpdated=VALUES(countryUpdated)"))
+      return true;
+    else
+      return false;
   }
 
   function updateGenre($genre) {
     global $db;
     global $thisupdate;
-    return true;
+    $row = array();
+    $row[] = "'".$genre->id."'";
+    if (isset($genre->name) && strlen($genre->name))
+      $row[] = "'".$db->escape_string($genre->name)."'";
+    else
+      $row[] = "null"; 
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT INTO genres (genreId, genreName, genreUpdated) VALUES (
+                      ".implode(', ',$row)."
+                    ) ON DUPLICATE KEY UPDATE
+                    genreName=VALUES(genreName),
+                    genreUpdated=VALUES(genreUpdated)"))
+      return true;
+    else
+      return false;
   }
 
   function updateLanguage($language) {
@@ -182,39 +224,114 @@
       return false;
   }
 
+  function updatePerson($person) {
+    global $db;
+    global $thisupdate;
+    $row = array();
+    $row[] = "'".$person->id."'";
+    if (isset($person->gender) && ($person->gender == 1))
+      $row[] = "'f'";
+    else if (isset($person->gender) && ($person->gender == 2))
+      $row[] = "'m'";
+    else
+      $row[] = "null";
+    if (isset($person->profile_path) && strlen($person->profile_path))
+      $row[] = "'".$db->escape_string($person->profile_path)."'";
+    else
+      $row[] = "null";
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT INTO persons (personId, personGender, personPicture, personUpdated) VALUES (
+                      ".implode(', ',$row)."
+                    ) ON DUPLICATE KEY UPDATE
+                    personGender=VALUES(personGender),
+                    personPicture=VALUES(personPicture),
+                    personUpdated=VALUES(personUpdated)"))
+      return true;
+    else
+      return false;
+  }
+
+  $updated = array();
+  $updated['collection'] = array();
+  $updated['company'] = array();
+  $updated['country'] = array();
+  $updated['genre'] = array();
+  $updated['language'] = array();
+  $updated['person'] = array();
   function updateMovie($movie) {
     global $db;
     global $thisupdate;
+    global $updated;
     $row = array("movieUpdated='".$thisupdate."'");
     if (isset($movie->belongs_to_collection) && is_object($movie->belongs_to_collection) && isset($movie->belongs_to_collection->id) && is_numeric($movie->belongs_to_collection->id)) {
-      updateCollection($movie->belongs_to_collection);
+      if (!in_array($movie->belongs_to_collection->id,$updated['collection'])) {
+        updateCollection($movie->belongs_to_collection);
+        $updated['collection'][] = $movie->belongs_to_collection->id;
+      }
       $row[] = "movieCollection=".$movie->belongs_to_collection->id;
     } else
       $row[] = "movieCollection=NULL";
-    if (isset($movie->production_companies) && is_array($movie->production_companies) && count($movie->production_companies)) {
-      $list = array();
-      foreach ($movie->production_companies as $company) {
-        updateCompany($company);
-        $db->query("INSERT IGNORE INTO moviesCompanies (movieId, companyId) VALUES (".$movie->id.", ".$company->id.")");
-        $list[] = $company->id;
-      }
-      $db->query("DELETE FROM movieCompanies WHERE movieId =".$movie->id." AND (companyId NOT IN (".implode(',',$list)."))");
-    } else
-      $db->query("DELETE FROM moviesCompanies WHERE movieId=".$movie->id);
     if (isset($movie->production_countries) && is_array($movie->production_countries) && count($movie->production_countries)) {
       $list = array();
       foreach ($movie->production_countries as $country) {
-        updateCountry($country);
+        if (!in_array($country->iso_3166_1,$updated['country'])) {
+          updateCountry($country);
+          $updated['country'][] = $country->iso_3166_1;
+        }
         $db->query("INSERT IGNORE INTO moviesCountries (movieId, countryCode) VALUES (".$movie->id.", '".$country->iso_3166_1."')");
         $list[] = $country->iso_3166_1;
       }
       $db->query("DELETE FROM movieCountries WHERE movieId =".$movie->id." AND (countryCode NOT IN (".implode(',',$list)."))");
     } else
       $db->query("DELETE FROM moviesCountries WHERE movieId=".$movie->id);
+    if (isset($movie->production_companies) && is_array($movie->production_companies) && count($movie->production_companies)) {
+      $list = array();
+      foreach ($movie->production_companies as $company) {
+        if (!in_array($company->id,$updated['company'])) {
+          updateCompany($company);
+          $updated['company'][] = $company->id;
+        }
+        $db->query("INSERT IGNORE INTO moviesCompanies (movieId, companyId) VALUES (".$movie->id.", ".$company->id.")");
+        $list[] = $company->id;
+      }
+      $db->query("DELETE FROM movieCompanies WHERE movieId =".$movie->id." AND (companyId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM moviesCompanies WHERE movieId=".$movie->id);
+    if (isset($movie->credits->cast) && is_array($movie->credits->cast) && count($movie->credits->cast)) {
+      $list = array();
+      foreach ($movie->credits->cast as $person) {
+        if (!in_array($person->id,$updated['person'])) {
+          updatePerson($person);
+          $updated['person'][] = $person->id;
+        }
+        $row2 = array();
+        $row2[] = $movie->id;
+        $row2[] = $person->id;
+        if (isset($person->character) && strlen($person->character))
+          $row2[] = "'".$db->escape_string($person->character)."'";
+        else
+          $row2[] = 'NULL';
+        if (isset($person->order) && is_numeric($person->order) && (strlen($person->order) > 0))
+          $row2[] = $person->order;
+        else
+          $row2[] = 'NULL';
+        $db->query("INSERT IGNORE INTO moviesPersons (movieId, personId, personCharacter, personOrder)
+                    VALUES (".implode(',',$row2).")
+                    ON DUPLICATE KEY UPDATE
+                    personCharacter=VALUES(personCharacter),
+                    personOrder=VALUES(personOrder)");
+        $list[] = $person->id;
+      }
+      $db->query("DELETE FROM moviePersons WHERE movieId =".$movie->id." AND (personId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM moviesPersons WHERE movieId=".$movie->id);
     if (isset($movie->genres) && is_array($movie->genres) && count($movie->genres)) {
       $list = array();
       foreach ($movie->genres as $genre) {
-        updateGenre($genre);
+        if (!in_array($genre->id,$updated['genre'])) {
+          updateGenre($genre);
+          $updated['genre'][] = $genre->id;
+        }
         $db->query("INSERT IGNORE INTO moviesGenres (movieId, genreId) VALUES (".$movie->id.", ".$genre->id.")");
         $list[] = $genre->id;
       }
@@ -234,7 +351,10 @@
     if (isset($movie->spoken_languages) && is_array($movie->spoken_languages) && count($movie->spoken_languages)) {
       $list = array();
       foreach ($movie->spoken_languages as $language) {
-        updateLanguage($language);
+        if (!in_array($language->iso_639_1,$updated['language'])) {
+          updateLanguage($language);
+          $updated['language'][] = $language->iso_639_1;
+        }
         $db->query("INSERT IGNORE INTO moviesLanguages (movieId, languageCode) VALUES (".$movie->id.", '".$language->iso_639_1."')");
         $list[] = $language->iso_639_1;
       }
@@ -290,8 +410,8 @@
       $row[] = "movieAdult=1";
     else
       $row[] = "movieAdult=0";
-    //$db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
-    echo "UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id."\n"; exit;
+    $db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
+    echo $movie->title."\n";
   }
 
   //////////////////////////////////////////////////////////
