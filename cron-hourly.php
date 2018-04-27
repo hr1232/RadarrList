@@ -13,15 +13,16 @@
 
   // get list of updated movies
   $updates = getMovieUpdates($lastupdate);
-  print_r($updates);
+  foreach ($updates as $update) {
+    $movie = getMovie($update);
+    updateMovie($movie);
+  }
 
   // get list of updated series
   $updates = getTvUpdates($lastupdate);
-  print_r($updates);
 
   // get list of updated persons
   $updates = getPersonUpdates($lastupdate);
-  print_r($updates);
 
   // disconnect from database
   $db->close();
