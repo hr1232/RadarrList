@@ -15,8 +15,12 @@
   $i = 1;
   foreach ($updates as $update) {
     echo ($i++)."/".count($updates).": ";
-    $movie = getMovie($update);
-    updateMovie($movie);
+    if ($movie = getMovie($update))
+      updateMovie($movie);
+    else {
+      $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update);
+      echo "\n";
+    }
   }
 
   // get list of updated series

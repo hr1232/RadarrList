@@ -62,7 +62,10 @@
           $list[] = $value->id;
       }
     } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 100");
+    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 400");
+    while ($row = $result->fetch_array(MYSQLI_ASSOC))
+      $list[] = $row['movieId'];
+    $result = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NOT NULL) AND (DATE_SUB(`movieUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT 100");
     while ($row = $result->fetch_array(MYSQLI_ASSOC))
       $list[] = $row['movieId'];
     return $list;
@@ -262,6 +265,7 @@
     global $db;
     global $thisupdate;
     global $updated;
+    $db->query("INSERT IGNORE INTO movies (movieId) VALUES (".$movie->id.")");
     $row = array("movieUpdated='".$thisupdate."'");
     if (isset($movie->belongs_to_collection) && is_object($movie->belongs_to_collection) && isset($movie->belongs_to_collection->id) && is_numeric($movie->belongs_to_collection->id)) {
       if (!in_array($movie->belongs_to_collection->id,$updated['collection'])) {
