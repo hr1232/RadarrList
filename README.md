@@ -8,15 +8,15 @@ The list is available through the following base URL:
 https://www.heikorichter.name/movies.php
 
 You can add the following parameters to filter the lists content:
-- minyear      (Minimum year of release)
-- maxyear      (Maximum year of release)
-- maxage       (Danymic alternative for minyear)
-- minvote      (Minimum vote average)
-- maxvote      (Maximum vote average)
-- collections  (Wether or not to complete collections, 1: comlete collections, 0: strictly adhere to filter opions)
-- adult        (Wether or not to return porn movies, 1: porn only, 0: no porn)
-- lang         (Original language of a movie)
-- nogenres     (Comma seperated list of TMDB genre IDs that are unwanted, see below)
+- minyear	(Minimum year of release)
+- maxyear	(Maximum year of release)
+- maxage	(Danymic alternative for minyear)
+- minvote	(Minimum vote average)
+- maxvote	(Maximum vote average)
+- collections	(Wether or not to complete collections, 1: comlete collections, 0: strictly adhere to filter opions)
+- adult		(Wether or not to return porn movies, 1: porn only, 0: no porn)
+- lang		(Original language of a movie)
+- nogenres	(Comma seperated list of TMDB genre IDs that are unwanted, see below)
 
 If no parameters are given the default settings are as follows:
 https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
