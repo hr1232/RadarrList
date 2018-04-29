@@ -62,7 +62,7 @@
           $list[] = $value->id;
       }
     } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 400");
+    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 50");
     while ($row = $result->fetch_array(MYSQLI_ASSOC))
       $list[] = $row['movieId'];
     $result = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NOT NULL) AND (DATE_SUB(`movieUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT 100");
@@ -415,7 +415,6 @@
     else
       $row[] = "movieAdult=0";
     $db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
-    echo $movie->title."\n";
   }
 
   //////////////////////////////////////////////////////////

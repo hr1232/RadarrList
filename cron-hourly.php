@@ -14,7 +14,6 @@
   $updates = getMovieUpdates();
   $i = 1;
   foreach ($updates as $update) {
-    echo ($i++)."/".count($updates).": ";
     if ($movie = getMovie($update))
       updateMovie($movie);
     else {
