@@ -23,6 +23,8 @@ https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
 
 # Installation
 
+You do not need any of my code to use the list. The code is running on my system and you only need to downoad it if you want to run your own mirror (e.g. to modify it in some form).
+
 To use this list in Radarr do the following simple steps:
 * Go to the lists tab in Radarr settings
 * Add a new List, choose StevenLu
