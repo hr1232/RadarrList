@@ -2,6 +2,8 @@
 
 This tool provides a comprehensive list with many filters for use in Radarr. It allows you to import movies automatically into Radarr for further use.
 
+It is based on the entire database of themoviedb.org. If you so desire you can import the entire movie database of almost 400k movies into Radarr. And of course you may filter the responses according to your needs.
+
 As a special feature it is the only list available, that completes movie collections. Set whatever filters you want and you will probably have collections only partially in your database. This list will complete all collections with those parts that do not match your filters.
 
 The list is available through the following base URL:
@@ -18,4 +20,12 @@ You can add the following parameters to filter the lists content:
 - lang         Original language of a movie
 
 If no parameters are given the default settings are as follows:
-https://www.heikorichter.name/movies.php&maxage=3&collections=1&adult=0
+https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
+
+# Instalation
+
+To use this list in Radarr do the following:
+- Go to the Lists tab in Radarr settings
+- Add new List, choose StevenLu
+- Give your list a name and choose options as you desire
+- As URL add the list url with your desired parameters

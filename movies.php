@@ -13,7 +13,7 @@
   if (isset($_GET['maxage']) && is_numeric($_GET['maxage']))
     $_GET['minyear'] = date('Y')-$_GET['maxage'];
   else if (!isset($_GET['minyear']))
-    $_GET['minyear'] = date('Y')-1;
+    $_GET['minyear'] = date('Y')-3;
   if (!isset($_GET['maxyear']))
     $_GET['maxyear'] = date('Y');
 
