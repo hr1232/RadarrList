@@ -8,15 +8,15 @@ The list is available through the following base URL:
 https://www.heikorichter.name/movies.php
 
 You can add the following parameters to filter the lists content:
-- minyear	(Minimum year of release)
-- maxyear	(Maximum year of release)
-- maxage	(Danymic alternative for minyear)
-- minvote	(Minimum vote average)
-- maxvote	(Maximum vote average)
-- collections	(Wether or not to complete collections, 1: comlete collections, 0: strictly adhere to filter opions)
-- adult		(Wether or not to return porn movies, 1: porn only, 0: no porn)
-- lang		(Original language of a movie)
-- nogenres	(Comma seperated list of TMDB genre IDs that are unwanted, see below)
+* minyear	(Minimum year of release)
+* maxyear	(Maximum year of release)
+* maxage	(Danymic alternative for minyear)
+* minvote	(Minimum vote average)
+* maxvote	(Maximum vote average)
+* collections	(Wether or not to complete collections, 1: comlete collections, 0: strictly adhere to filter opions)
+* adult		(Wether or not to return porn movies, 1: porn only, 0: no porn)
+* lang		(Original language of a movie)
+* nogenres	(Comma seperated list of TMDB genre IDs that are unwanted, see below)
 
 If no parameters are given the default settings are as follows:
 https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
@@ -34,22 +34,22 @@ To use this list in Radarr do the following simple steps:
 # Genre IDs
 
 The following list of genre IDs can be used in the nogenres parameter:
-- 12	Adventure
-- 14	Fantasy
-- 16	Animation
-- 18	Drama
-- 27	Horror
-- 28	Action
-- 35	Comedy
-- 36	History
-- 37	Western
-- 53	Thriller
-- 80	Crime
-- 99	Documentary
-- 878	Science Fiction
-- 9648	Mystery
-- 10402	Music
-- 10749	Romance
-- 10751	Family
-- 10752	War
-- 10770	TV Movie
+* 12	Adventure
+* 14	Fantasy
+* 16	Animation
+* 18	Drama
+* 27	Horror
+* 28	Action
+* 35	Comedy
+* 36	History
+* 37	Western
+* 53	Thriller
+* 80	Crime
+* 99	Documentary
+* 878	Science Fiction
+* 9648	Mystery
+* 10402	Music
+* 10749	Romance
+* 10751	Family
+* 10752	War
+* 10770	TV Movie
