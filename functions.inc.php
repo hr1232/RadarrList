@@ -48,7 +48,7 @@
   //////////////////////////////////////////////////////////
 
   // function to retrieve all movies updated since the last run and up to 500 movies that have never been updated
-  function getMovieUpdates() {
+  function getMovieUpdates($limit) {
     global $api;
     global $db;
     $result = $db->query("SELECT DATE_FORMAT(IF(MAX(movieUpdated) IS NULL,DATE_SUB(NOW(),INTERVAL 3 HOUR),MAX(movieUpdated)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM movies");
@@ -62,10 +62,10 @@
           $list[] = $value->id;
       }
     } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT 50");
+    $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT ".$limit);
     while ($row = $result->fetch_array(MYSQLI_ASSOC))
       $list[] = $row['movieId'];
-    $result = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NOT NULL) AND (DATE_SUB(`movieUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT 100");
+    $result = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NOT NULL) AND (DATE_SUB(`movieUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT ".$limit);
     while ($row = $result->fetch_array(MYSQLI_ASSOC))
       $list[] = $row['movieId'];
     return $list;

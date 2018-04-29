@@ -21,8 +21,9 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
   // build and execute sql query
-  $sql = "SELECT movieImdb, movieOriginalTitle, moviePoster, movieCollection
+  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, GROUP_CONCAT(moviesGenres.genreId) AS movieGenres
           FROM movies
+          LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
           WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '')";
   if (isset($_GET['lang']) && (strlen($_GET['lang']) == 2)) {
     $_GET['lang'] = $db->escape_string($_GET['lang']);
@@ -57,6 +58,12 @@
       $sql .= " AND (YEAR(movieReleaseDate)<=".$_GET['maxyear'].")";
     }
   }
+  $_GET['nogenres'] = '1,2,3,4,5,6,7,8,9,10';
+  if (isset($_GET['nogenres'])) {
+    $_GET['nogenres'] = $db->escape_string($_GET['nogenres']);
+    $sql = "SELECT * FROM (".$sql." GROUP BY movies.movieId) as temp WHERE (movieGenres NOT IN (".$_GET['nogenres']."))";
+  } else
+    $sql .= " GROUP BY movies.movieId";
   $result = $db->query($sql);
 
   // make array
@@ -72,7 +79,7 @@
 
   // get rest of collections from database
   if (count($collections)) {
-    $result = $db->query("SELECT movieImdb, movieOriginalTitle, moviePoster
+    $result = $db->query("SELECT movieImdb, movieOriginalTitle
                           FROM movies
                           WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '') AND (movieCollection IN (".implode(',',$collections)."))");
     while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
