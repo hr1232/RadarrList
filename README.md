@@ -20,7 +20,7 @@ You can add the following parameters to filter the lists content:
 If no parameters are given the default settings are as follows:
 https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
 
-# Instalation
+# Installation
 
 To use this list in Radarr do the following simple steps:
 - Go to the lists tab in Radarr settings
