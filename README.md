@@ -1,6 +1,6 @@
 # RadarrList
 
-This tool provides a comprehensive list with many filter options for use in Radarr. It allows you to import movies automatically into Radarr for further use. It is based on the entire database of ihttp://www.themoviedb.org. If you so desire you can import the entire movie database of almost 400k movies into Radarr. And of course you may filter the responses according to your needs.
+This tool provides a comprehensive list with many filter options for use in Radarr. It allows you to import movies automatically into Radarr for further use. It is based on the entire database of http://www.themoviedb.org. If you so desire you can import the entire movie database of almost 400k movies into Radarr. And of course you may filter the responses according to your needs.
 
 As a special feature it is the only list available, that completes movie collections. Set whatever filters you want and you will probably have some collections only partially in your database. This list will complete all collections with those parts that do not match your filters.
 
