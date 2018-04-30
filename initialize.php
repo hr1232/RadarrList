@@ -7,8 +7,11 @@
   // connect to database
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
-  // remember current time
-  $thisupdate = gmdate('Y-m-d H:i:s');
+  // get time of the last update to not screw up the hourly update cronjob
+  // get current time if not initialized yet
+  $thisupdate = $db->query("SELECT DATE_FORMAT(IF(MAX(movieUpdated) IS NULL,DATE_SUB(NOW(),INTERVAL 3 HOUR),MAX(movieUpdated)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM movies");
+  $thisupdate = $thisupdate->fetch_array(MYSQLI_ASSOC);
+  $thisupdate = $thisupdate['lastUpdate'];
 
   // get list of updated movies
   echo "Initializing database, please wait...\n";
@@ -18,7 +21,7 @@
     $updates = $db->query("SELECT COUNT(*) AS movieCount FROM movies WHERE movieUpdated IS NULL");
     $updates = $updates->fetch_array(MYSQLI_ASSOC);
     if ($updates['movieCount']) {
-      echo number_format((1-$updates['movieCount']/$complete['movieCount'])*100,5,'.',',')."%: ";
+      echo $updates['movieCount']." ".number_format((1-$updates['movieCount']/$complete['movieCount'])*100,5,'.',',')."%: ";
       $updates = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY moviePopularity DESC LIMIT 1");
       if ($update = $updates->fetch_array(MYSQLI_ASSOC)) {
         if ($movie = getMovie($update['movieId'])) {

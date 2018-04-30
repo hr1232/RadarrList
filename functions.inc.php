@@ -16,7 +16,7 @@
   define("DUMP_COMPANIES",   "http://files.tmdb.org/p/exports/production_company_ids_".date('m_d_Y').".json.gz");
 
   //////////////////////////////////////////////////////////
-  // COMMONS
+  // FUNCTIONS
   // This section holds some common functions to be used later on
   //////////////////////////////////////////////////////////
 
@@ -41,11 +41,6 @@
     else
       return false;
   }
-
-  //////////////////////////////////////////////////////////
-  // API
-  // This sections provides functions for API calls
-  //////////////////////////////////////////////////////////
 
   // function to retrieve all movies updated since the last run and up to 500 movies that have never been updated
   function getMovieUpdates($limit) {
@@ -116,11 +111,7 @@
       return false;
   }
 
-  //////////////////////////////////////////////////////////
-  // UPDATE
-  // This section provides functions to update information in the database
-  //////////////////////////////////////////////////////////
-
+  // update a collection in the database
   function updateCollection($collection) {
     global $db;
     global $thisupdate;
@@ -141,6 +132,7 @@
       return false;
   }
 
+  // update a company in the database
   function updateCompany($company) {
     global $db;
     global $thisupdate;
@@ -167,6 +159,7 @@
         return false;
   }
 
+  // update a country in the database
   function updateCountry($country) {
     global $db;
     global $thisupdate;
@@ -187,6 +180,7 @@
       return false;
   }
 
+  // update a genre in the database
   function updateGenre($genre) {
     global $db;
     global $thisupdate;
@@ -207,6 +201,7 @@
       return false;
   }
 
+ // update a language in the database
   function updateLanguage($language) {
     global $db;
     global $thisupdate;
@@ -227,6 +222,7 @@
       return false;
   }
 
+  // update a person in the database
   function updatePerson($person) {
     global $db;
     global $thisupdate;
@@ -254,6 +250,7 @@
       return false;
   }
 
+  // update a movie in the database (including collections, companies, countries, genres, keywords, languages and persons)
   $updated = array();
   $updated['collection'] = array();
   $updated['company'] = array();
@@ -477,25 +474,5 @@
     } else
       return false;
   }
-
-  //////////////////////////////////////////////////////////
-  // MOVIES
-  // This section provides functions to deal with movies
-  //////////////////////////////////////////////////////////
-
-  // function to retrieve details for one movie
-  function getMovieDetails($id) {
-    
-  };
-
-  // function go get al updated movies for a defined timeframe
-  function getUpdatedMovies() {
-
-  };
-
-  //////////////////////////////////////////////////////////
-  // COLLECTIONS
-  // This section provides functions to deal with collections
-  //////////////////////////////////////////////////////////
 
 ?>

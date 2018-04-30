@@ -11,7 +11,7 @@
   $thisupdate = gmdate('Y-m-d H:i:s');
 
   // get list of updated movies
-  $updates = getMovieUpdates(100);
+  $updates = getMovieUpdates(50);
   $i = 1;
   foreach ($updates as $update) {
     if ($movie = getMovie($update))
