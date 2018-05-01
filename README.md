@@ -21,6 +21,22 @@ You can add the following parameters to filter the lists content:
 If no parameters are given the default settings are as follows:
 https://www.heikorichter.name/movies.php?maxage=3&collections=1&adult=0
 
+# Content
+
+Here you will find a description for each file:
+* LICENSE		License agreement
+* README.me		This file
+* cron-daily.php	Daily cronjob that imports dump files from TMDB
+* cron-hourly.php	Hourly cronjob to inguest changes and from TMDB
+* functions.php		Library file that contains functions for the main scripts
+* initialize.php	Program to be run once in order to do the initial mirroring (will take several weeks)
+* movies.php		webserver interface to create the radarr lists
+* settings.php		Settings file to individualize the scripts
+
+Additionally these files and directories are needed:
+* /var/lib/radarrlist		Holds the images (path can be changed), needs to me mounted as /movieimg/ in the webserver dir
+* /etc/radarrlist/settings.php	Holds the individualized version of settings.php
+
 # Installation
 
 You do not need any of my code to use the list. The code is running on my system and you only need to downoad it if you want to run your own mirror (e.g. to modify it in some form).
