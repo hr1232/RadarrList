@@ -14,6 +14,7 @@
   define("DUMP_NETWORKS",    "http://files.tmdb.org/p/exports/tv_network_ids_".date('m_d_Y').".json.gz");
   define("DUMP_KEYWORDS",    "http://files.tmdb.org/p/exports/keyword_ids_".date('m_d_Y').".json.gz");
   define("DUMP_COMPANIES",   "http://files.tmdb.org/p/exports/production_company_ids_".date('m_d_Y').".json.gz");
+  define("IMAGE_BASE",       "http://image.tmdb.org/t/p/w500");
 
   //////////////////////////////////////////////////////////
   // FUNCTIONS
@@ -58,10 +59,10 @@
       }
     } while ($result->total_pages > $page++);
     $result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() DESC LIMIT ".$limit);
-    while ($row = $result->fetch_array(MYSQLI_ASSOC))
+    while (($row = $result->fetch_array(MYSQLI_ASSOC)) && (count($list)<$limit))
       $list[] = $row['movieId'];
     $result = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NOT NULL) AND (DATE_SUB(`movieUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT ".$limit);
-    while ($row = $result->fetch_array(MYSQLI_ASSOC))
+    while (($row = $result->fetch_array(MYSQLI_ASSOC)) && (count($list)<$limit))
       $list[] = $row['movieId'];
     return $list;
   }
@@ -70,6 +71,9 @@
   function getTvUpdates($startTime) {
     global $api;
     global $db;
+    $result = $db->query("SELECT DATE_FORMAT(IF(MAX(seriesUpdated) IS NULL,DATE_SUB(NOW(),INTERVAL 3 HOUR),MAX(seriesUpdated)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM series");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
+    $startTime = $row['lastUpdate'];
     $list = array();
     $page = 1;
     do {
@@ -78,27 +82,12 @@
           $list[] = $value->id;
       }
     } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT seriesId FROM series WHERE seriesUpdated IS NULL ORDER BY seriesPopularity DESC LIMIT 500");
-    while ($row = $result->fetch_array(MYSQLI_ASSOC))
+    $result = $db->query("SELECT seriesId FROM series WHERE seriesUpdated IS NULL ORDER BY RAND() DESC LIMIT ".$limit);
+    while (($row = $result->fetch_array(MYSQLI_ASSOC)) && (count($list)<$limit))
       $list[] = $row['seriesId'];
-    return $list;
-  }
-
-  // function to retrieve all persons updated since the last run and up to 500 persons that have never been updated
-  function getPersonUpdates($startTime) {
-    global $api;
-    global $db;
-    $list = array();
-    $page = 1;
-    do {
-      if ($result = getJson("https://api.themoviedb.org/3/tv/changes?api_key=".$api."&start_date=".urlencode($startTime)."&page=".$page)) {
-        foreach($result->results as $value)
-          $list[] = $value->id;
-      }
-    } while ($result->total_pages > $page++);
-    $result = $db->query("SELECT personId FROM persons WHERE personUpdated IS NULL ORDER BY personPopularity DESC LIMIT 500");
-    while ($row = $result->fetch_array(MYSQLI_ASSOC))
-      $list[] = $row['personId'];
+    $result = $db->query("SELECT seriesId FROM series WHERE (seriesUpdated IS NOT NULL) AND (DATE_SUB(`seriesUpdated`,INTERVAL 3 MONTH)>=NOW()) ORDER BY RAND() DESC LIMIT ".$limit);
+    while (($row = $result->fetch_array(MYSQLI_ASSOC)) && (count($list)<$limit))
+      $list[] = $row['seriesId'];
     return $list;
   }
 
@@ -111,15 +100,31 @@
       return false;
   }
 
+  // download a picture
+  function getImage($image) {
+    global $imgbase;
+    if (@mkdir($imgbase."/".$image[1]."/".$image[2],0777,true)) {
+      if ($file = @file_get_contents(IMAGE_BASE.$image))
+        if (file_put_contents($imgbase."/".$image[1]."/".$image[2].$image,$file))
+          return true;
+        else
+          return false;
+      else
+        return false;
+    } else
+      return false;
+  }
+
   // update a collection in the database
   function updateCollection($collection) {
     global $db;
     global $thisupdate;
     $row = array();
     $row[] = $collection->id;
-    if (isset($collection->poster_path) && strlen($collection->poster_path))
+    if (isset($collection->poster_path) && strlen($collection->poster_path)) {
+      getImage($collection->poster_path);
       $row[] = "'".$db->escape_string($collection->poster_path)."'";
-    else
+    } else
       $row[] = "null"; 
     $row[] = "'".$thisupdate."'";
     if ($db->query("INSERT INTO collections (collectionId, collectionPoster, collectionUpdated) VALUES (
@@ -138,9 +143,10 @@
     global $thisupdate;
     $row = array();
     $row[] = $company->id;
-    if (isset($company->logo_path) && strlen($company->logo_path))
+    if (isset($company->logo_path) && strlen($company->logo_path)) {
+      getImage($company->logo_path);
       $row[] = "'".$db->escape_string($company->logo_path)."'";
-    else
+    } else
       $row[] = "null"; 
     if (isset($company->origin_country) && strlen($company->origin_country))
       $row[] = "'".$db->escape_string($company->origin_country)."'";
@@ -234,9 +240,10 @@
       $row[] = "'m'";
     else
       $row[] = "null";
-    if (isset($person->profile_path) && strlen($person->profile_path))
+    if (isset($person->profile_path) && strlen($person->profile_path)) {
+      getImage($person->profile_path);
       $row[] = "'".$db->escape_string($person->profile_path)."'";
-    else
+    } else
       $row[] = "null";
     $row[] = "'".$thisupdate."'";
     if ($db->query("INSERT INTO persons (personId, personGender, personPicture, personUpdated) VALUES (
@@ -379,9 +386,10 @@
       $row[] = "movieOverview='".$db->escape_string($movie->overview)."'";
     else
       $row[] = "movieOverview=NULL";
-    if (isset($movie->poster_path) && strlen($movie->poster_path))
+    if (isset($movie->poster_path) && strlen($movie->poster_path)) {
+      getImage($movie->poster_path);
       $row[] = "moviePoster='".$db->escape_string($movie->poster_path)."'";
-    else
+    } else
       $row[] = "moviePoster=NULL";
     if (isset($movie->status) && strlen($movie->status))
       $row[] = "movieStatus='".$db->escape_string($movie->status)."'";

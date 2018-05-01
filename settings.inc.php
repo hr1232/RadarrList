@@ -15,6 +15,9 @@
 
   // tmdb api to use
   $api = 'api-key';
+
+  // basepath for images
+  $imgbase = "/var/lib/radarrlist";
   
   // get settings from file
   if(is_file('/etc/radarrlist/settings.inc.php'))
