@@ -103,16 +103,18 @@
   // download a picture
   function getImage($image) {
     global $imgbase;
-    if (@mkdir($imgbase."/".$image[1]."/".$image[2],0777,true)) {
+    if (!is_dir($imgbase."/".$image[1]."/".$image[2]))
+      @mkdir($imgbase."/".$image[1]."/".$image[2],0777,true);
+    if (!is_file($imgbase."/".$image[1]."/".$image[2].$image))
       if ($file = @file_get_contents(IMAGE_BASE.$image))
-        if (file_put_contents($imgbase."/".$image[1]."/".$image[2].$image,$file))
+        if (@file_put_contents($imgbase."/".$image[1]."/".$image[2].$image,$file))
           return true;
         else
           return false;
       else
         return false;
-    } else
-      return false;
+    else
+      return true;
   }
 
   // update a collection in the database

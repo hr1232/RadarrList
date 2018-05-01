@@ -21,7 +21,7 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
   // build and execute sql query
-  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, GROUP_CONCAT(moviesGenres.genreId) AS movieGenres
+  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster, GROUP_CONCAT(moviesGenres.genreId) AS movieGenres
           FROM movies
           LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
           WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '')";
@@ -70,9 +70,13 @@
   $movies = array();
   $collections = array();
   while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
+    if (isset($row['moviePoster']) && strlen($row['moviePoster']))
+      $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
+    else
+      $row['moviePoster'] = null;
     $movies[] = array('title' => $row['movieOriginalTitle'],
                       'imdb_id' => $row['movieImdb'],
-                      'poster_url' => null);
+                      'poster_url' => $row['moviePoster']);
     if (isset($GET['collections']) && ($GET['collections'] == 1) && is_numeric($row['movieCollection']) && (!in_array($row['movieCollection'],$collections)))
       $collections[] = $row['movieCollection'];
   }
@@ -91,9 +95,13 @@
         }
       }
       if (!$exist) {
+        if (isset($row['moviePoster']) && strlen($row['moviePoster']))
+          $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
+        else
+          $row['moviePoster'] = null;
         $movies[] = array('title' => $row['movieOriginalTitle'],
                           'imdb_id' => $row['movieImdb'],
-                          'poster_url' => null);
+                          'poster_url' => $row['moviePoster']);
       }
     }
   }
