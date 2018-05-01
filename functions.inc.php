@@ -424,11 +424,6 @@
     $db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
   }
 
-  //////////////////////////////////////////////////////////
-  // DUMPS
-  // This section provides functions to deal with dumps
-  //////////////////////////////////////////////////////////
-
   // function to retrieve dump of all movies
   function getMovieDump() {
     if ($json = getJsonDump(DUMP_MOVIES)) {

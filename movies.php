@@ -83,7 +83,7 @@
 
   // get rest of collections from database
   if (count($collections)) {
-    $result = $db->query("SELECT movieImdb, movieOriginalTitle
+    $result = $db->query("SELECT movieImdb, movieOriginalTitle, moviePoster
                           FROM movies
                           WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '') AND (movieCollection IN (".implode(',',$collections)."))");
     while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
