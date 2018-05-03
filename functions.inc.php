@@ -421,6 +421,10 @@
       $row[] = "movieAdult=1";
     else
       $row[] = "movieAdult=0";
+    if (isset($movie->video) && $movie->video)
+      $row[] = "movieVideo=1";
+    else
+      $row[] = "movieVideo=0";
     $db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
   }
 

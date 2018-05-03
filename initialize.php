@@ -18,11 +18,11 @@
   $complete = $db->query("SELECT COUNT(*) AS movieCount FROM movies");
   $complete = $complete->fetch_array(MYSQLI_ASSOC);
   do {
-    $updates = $db->query("SELECT COUNT(*) AS movieCount FROM movies WHERE movieUpdated IS NULL");
+    $updates = $db->query("SELECT COUNT(*) AS movieCount FROM movies WHERE (movieUpdated IS NULL) OR (movieVideo IS NULL)");
     $updates = $updates->fetch_array(MYSQLI_ASSOC);
     if ($updates['movieCount']) {
       echo $updates['movieCount']." ".number_format((1-$updates['movieCount']/$complete['movieCount'])*100,5,'.',',')."%: ";
-      $updates = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() LIMIT 1");
+      $updates = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NULL) OR (movieVideo IS NULL) ORDER BY moviePopularity DESC LIMIT 1");
       if ($update = $updates->fetch_array(MYSQLI_ASSOC)) {
         if ($movie = getMovie($update['movieId'])) {
           updateMovie($movie);
