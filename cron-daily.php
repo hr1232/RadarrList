@@ -178,6 +178,7 @@
     if (count($rows) > 0)
       $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity)");
     $db->query("DELETE FROM movies WHERE movieId NOT IN (".implode(',',$list).")");
+    $db->query("DELETE FROM tempMovies WHERE movieId NOT IN (".implode(',',$list).")");
   }
  
   // disconnect from database

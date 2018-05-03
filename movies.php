@@ -24,7 +24,7 @@
   $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster, GROUP_CONCAT(moviesGenres.genreId) AS movieGenres
           FROM movies
           LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
-          WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '')";
+          WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '') AND (movieVideo<>1)";
   if (isset($_GET['lang']) && (strlen($_GET['lang']) == 2)) {
     $_GET['lang'] = $db->escape_string($_GET['lang']);
     $sql .= " AND (movieOriginalLanguage IS NOT NULL) AND (movieOriginalLanguage='".$_GET['lang']."')";

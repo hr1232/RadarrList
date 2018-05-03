@@ -11,15 +11,18 @@
   $thisupdate = gmdate('Y-m-d H:i:s');
 
   // get list of updated movies
-  $updates = getMovieUpdates(50);
-  $i = 1;
-  foreach ($updates as $update) {
-    if ($movie = getMovie($update))
-      updateMovie($movie);
-    else {
-      $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update['movieId']);
-      echo "\n";
+  $updates = getMovieUpdates(800);
+  if (is_array($updates) && count($updates)) {
+    $i = 1;
+    foreach ($updates as $update) {
+      if ($movie = getMovie($update))
+        updateMovie($movie);
+      else {
+        $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update['movieId']);
+        echo "\n";
+      }
     }
+    updateTempMovies();
   }
 
   // get list of updated series

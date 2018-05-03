@@ -91,6 +91,68 @@
     return $list;
   }
 
+  // function to update the temporary movies table
+  function updateTempMovies() {
+    global $db;
+    if ($db->query("INSERT INTO tempMovies
+                    SELECT movies.*,
+                      collections.collectionTitle AS movieCollectionTitle,
+                      collections.collectionPoster AS movieCollectionPoster,
+                      GROUP_CONCAT(DISTINCT moviesCompanies.companyId) AS movieCompanies,
+                      GROUP_CONCAT(DISTINCT moviesCountries.countryCode) AS movieCountries,
+                      GROUP_CONCAT(DISTINCT moviesGenres.genreId) AS movieGenres,
+                      GROUP_CONCAT(DISTINCT moviesKeywords.keywordId) AS movieKeywords,
+                      GROUP_CONCAT(DISTINCT moviesLanguages.languageCode) AS movieLanguages,
+                      GROUP_CONCAT(DISTINCT moviesPersons.personId) AS moviePersons
+                    FROM movies
+                    LEFT JOIN collections ON movies.movieCollection=collections.collectionId
+                    LEFT JOIN moviesCompanies ON movies.movieId=moviesCompanies.movieId
+                    LEFT JOIN moviesCountries ON movies.movieId=moviesCountries.movieId
+                    LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
+                    LEFT JOIN moviesKeywords ON movies.movieId=moviesKeywords.movieId
+                    LEFT JOIN moviesLanguages ON movies.movieId=moviesLanguages.movieId
+                    LEFT JOIN moviesPersons ON movies.movieId=moviesPersons.movieId
+                    WHERE
+                      (movieUpdated IS NOT NULL) AND
+                      (movieAdult IS NOT NULL) AND
+                      (movieVideo IS NOT NULL) AND
+                      (movieVideo <> 1) AND
+                      (movieImdb IS NOT NULL)
+                    GROUP BY movies.movieId
+                    ON DUPLICATE KEY UPDATE
+                      movieTitle=VALUES(movieTitle),
+                      movieTagline=VALUES(movieTagline),
+                      movieOriginalTitle=VALUES(movieOriginalTitle),
+                      movieOriginalLanguage=VALUES(movieOriginalLanguage),
+                      movieStatus=VALUES(movieStatus),
+                      movieOverview=VALUES(movieOverview),
+                      movieReleaseDate=VALUES(movieReleaseDate),
+                      movieImdb=VALUES(movieImdb),
+                      movieCollection=VALUES(movieCollection),
+                      moviePoster=VALUES(moviePoster),
+                      movieRuntime=VALUES(movieRuntime),
+                      moviePopularity=VALUES(moviePopularity),
+                      movieAdult=VALUES(movieAdult),
+                      movieVideo=VALUES(movieVideo),
+                      movieVoteAverage=VALUES(movieVoteAverage),
+                      movieVoteCount=VALUES(movieVoteCount),
+                      movieUpdated=VALUES(movieUpdated),
+                      movieCollectionTitle=VALUES(movieCollectionTitle),
+                      movieCollectionPoster=VALUES(movieCollectionPoster),
+                      movieCompanies=VALUES(movieCompanies),
+                      movieCountries=VALUES(movieCountries),
+                      movieGenres=VALUES(movieGenres),
+                      movieKeywords=VALUES(movieKeywords),
+                      movieLanguages=VALUES(movieLanguages),
+                      moviePersons=VALUES(moviePersons)"))
+      if ($db->query("DELETE FROM tempMovies WHERE (movieUpdated IS NOT NULL) AND (movieAdult IS NOT NULL) AND (movieVideo IS NOT NULL) AND (movieVideo <> 1) AND (movieImdb IS NOT NULL)"))
+        return true;
+      else
+        return false;
+    else
+      return false;
+  };
+
   // function to retrieve information on a movie
   function getMovie($id) {
     global $api;

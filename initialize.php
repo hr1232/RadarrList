@@ -34,6 +34,7 @@
       }
     }
   } while ($updates->num_rows);
+  updateTempMovies();
   echo "Done.\n";
 
   // get list of updated series
