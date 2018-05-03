@@ -37,7 +37,7 @@
       $sql .= " AND (movieAdult=0)";
   }
   if (isset($_GET['minvote']) || isset($_GET['maxvote'])) {
-    $sql .= " AND (movieVoteAverage IS NOT NULL)";
+    $sql .= " AND (movieVoteAverage IS NOT NULL) AND (movieVoteCount IS NOT NULL) AND movieVoteCount>10";
     if (isset($_GET['minvote']) && is_numeric($_GET['minvote'])) {
       $_GET['minvote'] = $db->escape_string($_GET['minvote']);
       $sql .= " AND (movieVoteAverage>=".$_GET['minvote'].")";

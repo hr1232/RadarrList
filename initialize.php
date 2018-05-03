@@ -22,13 +22,13 @@
     $updates = $updates->fetch_array(MYSQLI_ASSOC);
     if ($updates['movieCount']) {
       echo $updates['movieCount']." ".number_format((1-$updates['movieCount']/$complete['movieCount'])*100,5,'.',',')."%: ";
-      $updates = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY moviePopularity DESC LIMIT 1");
+      $updates = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY RAND() LIMIT 1");
       if ($update = $updates->fetch_array(MYSQLI_ASSOC)) {
         if ($movie = getMovie($update['movieId'])) {
           updateMovie($movie);
           echo $movie->title." (Voted: ".($movie->vote_average).", Popularity: ".number_format($movie->popularity,3,'.',',').")\n";
         } else {
-          $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update);
+          $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update['movieId']);
           echo "API-Error\n";
         }
       }

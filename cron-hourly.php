@@ -17,7 +17,7 @@
     if ($movie = getMovie($update))
       updateMovie($movie);
     else {
-      $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update);
+      $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update['movieId']);
       echo "\n";
     }
   }
