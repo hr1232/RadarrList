@@ -34,11 +34,14 @@
       $db->query("INSERT INTO collections (collectionId, collectionTitle) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE collectionTitle=VALUES(collectionTitle)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE collections
-                FROM collections
-                LEFT JOIN t ON collections.collectionId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE collections
+                  FROM collections
+                  LEFT JOIN t ON collections.collectionId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest companies
@@ -66,11 +69,14 @@
       $db->query("INSERT INTO companies (companyId, companyName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE companyName=VALUES(companyName)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE companies
-                FROM companies
-                LEFT JOIN t ON companies.companyId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE companies
+                  FROM companies
+                  LEFT JOIN t ON companies.companyId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest keywords
@@ -98,11 +104,14 @@
       $db->query("INSERT INTO keywords (keywordId, keywordName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE keywordName=VALUES(keywordName)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE keywords
-                FROM keywords
-                LEFT JOIN t ON keywords.keywordId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE keywords
+                  FROM keywords
+                  LEFT JOIN t ON keywords.keywordId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest tv networks
@@ -130,11 +139,14 @@
       $db->query("INSERT INTO networks (networkId, networkName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE networkName=VALUES(networkName)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE networks
-                FROM networks
-                LEFT JOIN t ON networks.networkId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE networks
+                  FROM networks
+                  LEFT JOIN t ON networks.networkId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest people
@@ -171,11 +183,14 @@
       $db->query("INSERT INTO persons (personId, personName, personPopularity, personAdult) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity), personAdult=VALUES(personAdult)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE persons
-                FROM persons
-                LEFT JOIN t ON persons.personId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE persons
+                  FROM persons
+                  LEFT JOIN t ON persons.personId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest tv series
@@ -208,11 +223,14 @@
       $db->query("INSERT INTO series (seriesId, seriesOriginalTitle, seriesPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE seriesOriginalTitle=VALUES(seriesOriginalTitle), seriesPopularity=VALUES(seriesPopularity)");
       $db->query("DELETE FROM t WHERE tId IN (".implode(',',$rows2).")");
     }
-    $db->query("DELETE series
-                FROM series
-                LEFT JOIN t ON series.seriesId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE series
+                  FROM series
+                  LEFT JOIN t ON series.seriesId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // inguest movies
@@ -252,11 +270,14 @@
       $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity, movieAdult, movieVideo) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity), movieAdult=VALUES(movieAdult), movieVideo=VALUES(movieVideo)");
       $db->query("TRUNCATE TABLE t");
     }
-    $db->query("DELETE movies
-                FROM movies
-                LEFT JOIN t ON movies.movieId=t.tId
-                WHERE tId IS NOT NULL");
-    $db->query("TRUNCATE TABLE t");
+    $temp = $db->query("SELECT * FROM t LIMIT 1");
+    if ($temp->num_rows) {
+      $db->query("DELETE movies
+                  FROM movies
+                  LEFT JOIN t ON movies.movieId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("TRUNCATE TABLE t");
+    }
   }
 
   // destroy temporary table and disconnect from database
