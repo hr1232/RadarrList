@@ -36,6 +36,11 @@
     }
     $temp = $db->query("SELECT * FROM t LIMIT 1");
     if ($temp->num_rows) {
+      $images = $db->query("SELECT collectionPoster
+                            FROM t
+                            LEFT JOIN collections ON t.tId=collections.collectionId");
+      while ($image = $images->fetch_row())
+        delImage($image[0]);
       $db->query("DELETE collections
                   FROM collections
                   LEFT JOIN t ON collections.collectionId=t.tId
@@ -71,6 +76,11 @@
     }
     $temp = $db->query("SELECT * FROM t LIMIT 1");
     if ($temp->num_rows) {
+      $images = $db->query("SELECT companyLogo
+                            FROM t
+                            LEFT JOIN collections ON t.tId=companies.companyId");
+      while ($image = $images->fetch_row())
+        delImage($image[0]);
       $db->query("DELETE companies
                   FROM companies
                   LEFT JOIN t ON companies.companyId=t.tId
@@ -185,6 +195,11 @@
     }
     $temp = $db->query("SELECT * FROM t LIMIT 1");
     if ($temp->num_rows) {
+      $images = $db->query("SELECT personPicture
+                            FROM t
+                            LEFT JOIN persons ON t.tId=persons.personId");
+      while ($image = $images->fetch_row())
+        delImage($image[0]);
       $db->query("DELETE persons
                   FROM persons
                   LEFT JOIN t ON persons.personId=t.tId
@@ -272,9 +287,18 @@
     }
     $temp = $db->query("SELECT * FROM t LIMIT 1");
     if ($temp->num_rows) {
+      $images = $db->query("SELECT moviePoster
+                            FROM t
+                            LEFT JOIN movies ON t.tId=movies.movieId");
+      while ($image = $images->fetch_row())
+        delImage($image[0]);
       $db->query("DELETE movies
                   FROM movies
                   LEFT JOIN t ON movies.movieId=t.tId
+                  WHERE tId IS NOT NULL");
+      $db->query("DELETE tempMovies
+                  FROM tempMovies
+                  LEFT JOIN t ON tempMovies.movieId=t.tId
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }

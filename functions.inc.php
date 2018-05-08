@@ -191,6 +191,14 @@
       return true;
   }
 
+  // delete a picture
+  function delImage($image) {
+    global $imgbase;
+    if (is_file($imgbase."/".$image[1]."/".$image[2].$image))
+      unlink($imgbase."/".$image[1]."/".$image[2].$image);
+    return true;
+  }
+
   // update a collection in the database
   function updateCollection($collection) {
     global $db;
