@@ -31,6 +31,7 @@ Here you will find a description for each file:
 * functions.php		Library file that contains functions for the main scripts
 * initialize.php	Program to be run once in order to do the initial mirroring (will take several weeks)
 * movies.php		webserver interface to create the radarr lists
+* radarrlist.sql	MySQL database layout
 * settings.php		Settings file to individualize the scripts
 
 Additionally these files and directories are needed:

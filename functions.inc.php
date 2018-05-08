@@ -47,7 +47,13 @@
   function getMovieUpdates($limit) {
     global $api;
     global $db;
-    $result = $db->query("SELECT DATE_FORMAT(IF(MAX(movieUpdated) IS NULL,DATE_SUB(NOW(),INTERVAL 3 HOUR),MAX(movieUpdated)),'%Y-%m-%d %H:%i:%s') AS lastUpdate FROM movies");
+    $result = $db->query("SELECT IF(MAX(lastUpdate) IS NULL,'".gmdate('Y-m-d H:i:s')."',DATE_FORMAT(MAX(lastUpdate),'%Y-%m-%d %H:%i:%s')) AS lastUpdate FROM (
+                            SELECT MAX(movieUpdated) AS lastUpdate FROM movies
+                            UNION
+                            SELECT MAX(personUpdated) AS lastUpdate FROM persons
+                            UNION
+                            SELECT MAX(seriesUpdated) AS lastUpdate FROM series
+                          ) AS temp");
     $row = $result->fetch_array(MYSQLI_ASSOC);
     $startTime = $row['lastUpdate'];
     $list = array();
@@ -94,69 +100,75 @@
   // function to update the temporary movies table
   function updateTempMovies() {
     global $db;
-    if ($db->query("INSERT INTO tempMovies
-                    SELECT movies.*,
-                      collections.collectionTitle AS movieCollectionTitle,
-                      collections.collectionPoster AS movieCollectionPoster,
-                      GROUP_CONCAT(DISTINCT moviesCompanies.companyId) AS movieCompanies,
-                      GROUP_CONCAT(DISTINCT moviesCountries.countryCode) AS movieCountries,
-                      GROUP_CONCAT(DISTINCT moviesGenres.genreId) AS movieGenres,
-                      GROUP_CONCAT(DISTINCT moviesKeywords.keywordId) AS movieKeywords,
-                      GROUP_CONCAT(DISTINCT moviesLanguages.languageCode) AS movieLanguages,
-                      GROUP_CONCAT(DISTINCT moviesPersons.personId) AS moviePersons
-                    FROM movies
-                    LEFT JOIN collections ON movies.movieCollection=collections.collectionId
-                    LEFT JOIN moviesCompanies ON movies.movieId=moviesCompanies.movieId
-                    LEFT JOIN moviesCountries ON movies.movieId=moviesCountries.movieId
-                    LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
-                    LEFT JOIN moviesKeywords ON movies.movieId=moviesKeywords.movieId
-                    LEFT JOIN moviesLanguages ON movies.movieId=moviesLanguages.movieId
-                    LEFT JOIN moviesPersons ON movies.movieId=moviesPersons.movieId
-                    WHERE
-                      (movieUpdated IS NOT NULL) AND
-                      (movieAdult IS NOT NULL) AND
-                      (movieVideo IS NOT NULL) AND
-                      (movieVideo <> 1) AND
-                      (movieImdb IS NOT NULL)
-                    GROUP BY movies.movieId
-                    ON DUPLICATE KEY UPDATE
-                      movieTitle=VALUES(movieTitle),
-                      movieTagline=VALUES(movieTagline),
-                      movieOriginalTitle=VALUES(movieOriginalTitle),
-                      movieOriginalLanguage=VALUES(movieOriginalLanguage),
-                      movieStatus=VALUES(movieStatus),
-                      movieOverview=VALUES(movieOverview),
-                      movieReleaseDate=VALUES(movieReleaseDate),
-                      movieImdb=VALUES(movieImdb),
-                      movieCollection=VALUES(movieCollection),
-                      moviePoster=VALUES(moviePoster),
-                      movieRuntime=VALUES(movieRuntime),
-                      moviePopularity=VALUES(moviePopularity),
-                      movieAdult=VALUES(movieAdult),
-                      movieVideo=VALUES(movieVideo),
-                      movieVoteAverage=VALUES(movieVoteAverage),
-                      movieVoteCount=VALUES(movieVoteCount),
-                      movieUpdated=VALUES(movieUpdated),
-                      movieCollectionTitle=VALUES(movieCollectionTitle),
-                      movieCollectionPoster=VALUES(movieCollectionPoster),
-                      movieCompanies=VALUES(movieCompanies),
-                      movieCountries=VALUES(movieCountries),
-                      movieGenres=VALUES(movieGenres),
-                      movieKeywords=VALUES(movieKeywords),
-                      movieLanguages=VALUES(movieLanguages),
-                      moviePersons=VALUES(moviePersons)"))
-      if ($db->query("DELETE FROM tempMovies WHERE (movieUpdated IS NOT NULL) AND (movieAdult IS NOT NULL) AND (movieVideo IS NOT NULL) AND (movieVideo <> 1) AND (movieImdb IS NOT NULL)"))
-        return true;
-      else
-        return false;
-    else
-      return false;
+    $db->query("INSERT INTO tempMovies
+                SELECT movies.*,
+                  collections.collectionTitle AS movieCollectionTitle,
+                  collections.collectionPoster AS movieCollectionPoster,
+                  GROUP_CONCAT(DISTINCT moviesCompanies.companyId) AS movieCompanies,
+                  GROUP_CONCAT(DISTINCT moviesCountries.countryCode) AS movieCountries,
+                  GROUP_CONCAT(DISTINCT moviesGenres.genreId) AS movieGenres,
+                  GROUP_CONCAT(DISTINCT moviesKeywords.keywordId) AS movieKeywords,
+                  GROUP_CONCAT(DISTINCT moviesLanguages.languageCode) AS movieLanguages,
+                  GROUP_CONCAT(DISTINCT moviesPersons.personId) AS moviePersons
+                FROM movies
+                LEFT JOIN collections ON movies.movieCollection=collections.collectionId
+                LEFT JOIN moviesCompanies ON movies.movieId=moviesCompanies.movieId
+                LEFT JOIN moviesCountries ON movies.movieId=moviesCountries.movieId
+                LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
+                LEFT JOIN moviesKeywords ON movies.movieId=moviesKeywords.movieId
+                LEFT JOIN moviesLanguages ON movies.movieId=moviesLanguages.movieId
+                LEFT JOIN moviesPersons ON movies.movieId=moviesPersons.movieId
+                WHERE
+                  (movieUpdated IS NOT NULL) AND
+                  (movieAdult IS NOT NULL) AND
+                  (movieVideo IS NOT NULL) AND
+                  (movieVideo <> 1) AND
+                  (movieImdb IS NOT NULL) AND
+                  (movieImdb <> '')
+                GROUP BY movies.movieId
+                ON DUPLICATE KEY UPDATE
+                  movieTitle=VALUES(movieTitle),
+                  movieTagline=VALUES(movieTagline),
+                  movieOriginalTitle=VALUES(movieOriginalTitle),
+                  movieOriginalLanguage=VALUES(movieOriginalLanguage),
+                  movieStatus=VALUES(movieStatus),
+                  movieOverview=VALUES(movieOverview),
+                  movieReleaseDate=VALUES(movieReleaseDate),
+                  movieImdb=VALUES(movieImdb),
+                  movieCollection=VALUES(movieCollection),
+                  moviePoster=VALUES(moviePoster),
+                  movieRuntime=VALUES(movieRuntime),
+                  moviePopularity=VALUES(moviePopularity),
+                  movieAdult=VALUES(movieAdult),
+                  movieVideo=VALUES(movieVideo),
+                  movieVoteAverage=VALUES(movieVoteAverage),
+                  movieVoteCount=VALUES(movieVoteCount),
+                  movieUpdated=VALUES(movieUpdated),
+                  movieCollectionTitle=VALUES(movieCollectionTitle),
+                  movieCollectionPoster=VALUES(movieCollectionPoster),
+                  movieCompanies=VALUES(movieCompanies),
+                  movieCountries=VALUES(movieCountries),
+                  movieGenres=VALUES(movieGenres),
+                  movieKeywords=VALUES(movieKeywords),
+                  movieLanguages=VALUES(movieLanguages),
+                  moviePersons=VALUES(moviePersons)");
+    $db->query("DELETE FROM tempMovies WHERE (movieUpdated IS NULL) OR (movieAdult IS NULL) OR (movieVideo IS NULL) OR (movieVideo=1) OR (movieImdb IS NULL) OR (movieImdb='')");
+    return true;
   };
 
   // function to retrieve information on a movie
   function getMovie($id) {
     global $api;
     if ($result = getJson("https://api.themoviedb.org/3/movie/".$id."?api_key=".$api."&language=en-US&append_to_response=keywords,credits,changes"))
+      return $result;
+    else
+      return false;
+  }
+
+  // function to retrieve information on a collection
+  function getCollection($id) {
+    global $api;
+    if ($result = getJson("https://api.themoviedb.org/3/collection/".$id."?api_key=".$api."&language=en-US"))
       return $result;
     else
       return false;
@@ -369,32 +381,63 @@
       $db->query("DELETE FROM movieCompanies WHERE movieId =".$movie->id." AND (companyId NOT IN (".implode(',',$list)."))");
     } else
       $db->query("DELETE FROM moviesCompanies WHERE movieId=".$movie->id);
-    if (isset($movie->credits->cast) && is_array($movie->credits->cast) && count($movie->credits->cast)) {
+    if (isset($movie->credits)) {
       $list = array();
-      foreach ($movie->credits->cast as $person) {
-        if (!in_array($person->id,$updated['person'])) {
-          updatePerson($person);
-          $updated['person'][] = $person->id;
+      if (isset($movie->credits->cast) && is_array($movie->credits->cast) && count($movie->credits->cast)) {
+        foreach ($movie->credits->cast as $person) {
+          if (!in_array($person->id,$updated['person'])) {
+            updatePerson($person);
+            $updated['person'][] = $person->id;
+          }
+          $row2 = array();
+          $row2[] = $movie->id;
+          $row2[] = $person->id;
+          $row2[] = "'cast'";
+          if (isset($person->character) && strlen($person->character))
+            $row2[] = "'".$db->escape_string($person->character)."'";
+          else
+            $row2[] = 'NULL';
+          if (isset($person->order) && is_numeric($person->order) && (strlen($person->order) > 0))
+            $row2[] = $person->order;
+          else
+            $row2[] = 'NULL';
+          $db->query("INSERT IGNORE INTO moviesPersons (movieId, personId, personType, personCharacter, personOrder)
+                      VALUES (".implode(',',$row2).")
+                      ON DUPLICATE KEY UPDATE
+                      personCharacter=VALUES(personCharacter),
+                      personOrder=VALUES(personOrder)");
+          $list[] = $person->id;
         }
-        $row2 = array();
-        $row2[] = $movie->id;
-        $row2[] = $person->id;
-        if (isset($person->character) && strlen($person->character))
-          $row2[] = "'".$db->escape_string($person->character)."'";
-        else
-          $row2[] = 'NULL';
-        if (isset($person->order) && is_numeric($person->order) && (strlen($person->order) > 0))
-          $row2[] = $person->order;
-        else
-          $row2[] = 'NULL';
-        $db->query("INSERT IGNORE INTO moviesPersons (movieId, personId, personCharacter, personOrder)
-                    VALUES (".implode(',',$row2).")
-                    ON DUPLICATE KEY UPDATE
-                    personCharacter=VALUES(personCharacter),
-                    personOrder=VALUES(personOrder)");
-        $list[] = $person->id;
+      }
+      if (isset($movie->credits->crew) && is_array($movie->credits->crew) && count($movie->credits->crew)) {
+        foreach ($movie->credits->crew as $person) {
+          if (!in_array($person->id,$updated['person'])) {
+            updatePerson($person);
+            $updated['person'][] = $person->id;
+          }
+          $row2 = array();
+          $row2[] = $movie->id;
+          $row2[] = $person->id;
+          $row2[] = "'crew'";
+          if (isset($person->department) && strlen($person->department))
+            $row2[] = "'".$db->escape_string($person->department)."'";
+          else
+            $row2[] = 'NULL';
+          if (isset($person->job) && strlen($person->job))
+            $row2[] = "'".$db->escape_string($person->job)."'";
+          else
+            $row2[] = 'NULL';
+          $db->query("INSERT IGNORE INTO moviesPersons (movieId, personId, personType, personDepartment, personJob)
+                      VALUES (".implode(',',$row2).")
+                      ON DUPLICATE KEY UPDATE
+                      personCharacter=VALUES(personCharacter),
+                      personOrder=VALUES(personOrder)");
+          $list[] = $person->id;
+        }
       }
       $db->query("DELETE FROM moviePersons WHERE movieId =".$movie->id." AND (personId NOT IN (".implode(',',$list)."))");
+      if (!count($list))
+        $db->query("DELETE FROM moviesPersons WHERE movieId=".$movie->id);
     } else
       $db->query("DELETE FROM moviesPersons WHERE movieId=".$movie->id);
     if (isset($movie->genres) && is_array($movie->genres) && count($movie->genres)) {
@@ -488,6 +531,7 @@
     else
       $row[] = "movieVideo=0";
     $db->query("UPDATE movies SET ".implode(', ',$row)." WHERE movieId=".$movie->id);
+    return true;
   }
 
   // function to retrieve dump of all movies

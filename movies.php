@@ -21,23 +21,18 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
   // build and execute sql query
-  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster, GROUP_CONCAT(moviesGenres.genreId) AS movieGenres
-          FROM movies
-          LEFT JOIN moviesGenres ON movies.movieId=moviesGenres.movieId
-          WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '') AND (movieVideo<>1)";
+  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster
+          FROM tempMovies
+          WHERE 1";
   if (isset($_GET['lang']) && (strlen($_GET['lang']) == 2)) {
     $_GET['lang'] = $db->escape_string($_GET['lang']);
     $sql .= " AND (movieOriginalLanguage IS NOT NULL) AND (movieOriginalLanguage='".$_GET['lang']."')";
   }
-  if (isset($_GET['adult']) && is_bool($_GET['adult'])) {
-      $sql .= " AND (movieAdult IS NOT NULL)";
-    if ($_GET['adult'])
-      $sql .= " AND (movieAdult=1)";
-    else
-      $sql .= " AND (movieAdult=0)";
+  if (isset($_GET['adult']) && is_numeric($_GET['adult'])) {
+      $sql .= " AND (movieAdult IS NOT NULL) && (movieAdult=".$_GET['adult'].")";
   }
   if (isset($_GET['minvote']) || isset($_GET['maxvote'])) {
-    $sql .= " AND (movieVoteAverage IS NOT NULL) AND (movieVoteCount IS NOT NULL) AND movieVoteCount>=25";
+    $sql .= " AND (movieVoteAverage IS NOT NULL) AND (movieVoteCount IS NOT NULL) AND movieVoteCount>=30";
     if (isset($_GET['minvote']) && is_numeric($_GET['minvote'])) {
       $_GET['minvote'] = $db->escape_string($_GET['minvote']);
       $sql .= " AND (movieVoteAverage>=".$_GET['minvote'].")";
@@ -58,12 +53,18 @@
       $sql .= " AND (YEAR(movieReleaseDate)<=".$_GET['maxyear'].")";
     }
   }
-  $_GET['nogenres'] = '1,2,3,4,5,6,7,8,9,10';
+  if (isset($_GET['nokeywords'])) {
+    $_GET['nokeywords'] = explode(',',$_GET['nokeywords']);
+    foreach($_GET['nokeywords'] as $keyword)
+      if (is_numeric($keyword))
+        $sql .= " AND (FIND_IN_SET($keyword, movieKeywords)=0)";
+  }
   if (isset($_GET['nogenres'])) {
-    $_GET['nogenres'] = $db->escape_string($_GET['nogenres']);
-    $sql = "SELECT * FROM (".$sql." GROUP BY movies.movieId) as temp WHERE (movieGenres NOT IN (".$_GET['nogenres']."))";
-  } else
-    $sql .= " GROUP BY movies.movieId";
+    $_GET['nogenres'] = explode(',',$_GET['nogenres']);
+    foreach($_GET['nogenres'] as $genre)
+      if (is_numeric($genre))
+        $sql .= " AND (FIND_IN_SET($genre, movieGenres)=0)";
+  }
   $result = $db->query($sql);
 
   // make array
@@ -84,8 +85,8 @@
   // get rest of collections from database
   if (count($collections)) {
     $result = $db->query("SELECT movieImdb, movieOriginalTitle, moviePoster
-                          FROM movies
-                          WHERE (movieUpdated IS NOT NULL) AND (movieImdb IS NOT NULL) AND (movieImdb <> '') AND (movieCollection IN (".implode(',',$collections)."))");
+                          FROM tempMovies
+                          WHERE (movieCollection IN (".implode(',',$collections)."))");
     while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
       $exist = false;
       for ($i=0;$i<count($movies);$i++) {

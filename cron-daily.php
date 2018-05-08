@@ -115,14 +115,18 @@
         $row[] = $value->popularity;
       else
         $row[] = 0;
+      if (isset($value->adult) && $value->adult)
+        $row[] = 1;
+      else
+        $row[] = 0;
       $rows[] = "(".implode(',',$row).")";
       if (count($rows) == 5000) {
-        $db->query("INSERT INTO persons (personId, personName, personPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity)");
+        $db->query("INSERT INTO persons (personId, personName, personPopularity, personAdult) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity), personAdult=VALUES(personAdult)");
         $rows = array();
       }
     }
     if (count($rows) > 0)
-      $db->query("INSERT INTO persons (personId, personName, personPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity)");
+      $db->query("INSERT INTO persons (personId, personName, personPopularity, personAdult) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity), personAdult=VALUES(personAdult)");
     $db->query("DELETE FROM persons WHERE personId NOT IN (".implode(',',$list).")");
   }
 
@@ -169,18 +173,26 @@
         $row[] = $value->popularity;
       else
         $row[] = 0;
+      if (isset($value->adult) && $value->adult)
+        $row[] = 1;
+      else
+        $row[] = 0;
+      if (isset($value->video) && $value->video)
+        $row[] = 1;
+      else
+        $row[] = 0;
       $rows[] = "(".implode(',',$row).")";
       if (count($rows) == 5000) {
-        $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity)");
+        $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity, movieAdult, movieVideo) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity), movieAdult=VALUES(movieAdult), movieVideo=VALUES(movieVideo)");
         $rows = array();
       }
     }
     if (count($rows) > 0)
-      $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity)");
+      $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity, movieAdult, movieVideo) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity), movieAdult=VALUES(movieAdult), movieVideo=VALUES(movieVideo)");
     $db->query("DELETE FROM movies WHERE movieId NOT IN (".implode(',',$list).")");
     $db->query("DELETE FROM tempMovies WHERE movieId NOT IN (".implode(',',$list).")");
   }
- 
+
   // disconnect from database
   $db->close();
 
