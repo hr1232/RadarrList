@@ -24,22 +24,36 @@
   $complete = $db->query("SELECT COUNT(*) FROM movies");
   $complete = $complete->fetch_row();
   $complete = $complete[0];
-  $updates = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NULL) AND (movieAdult=0) AND (movieVideo=0) ORDER BY moviePopularity DESC");
-  if ($updates->num_rows) {
-    $i = $updates->num_rows;
-    while ($update = $updates->fetch_array(MYSQLI_ASSOC)) {
-      echo ($i--)." ".number_format(($i/$complete)*100,5,'.',',')."%: ";
-      if ($movie = getMovie($update['movieId'])) {
+  do {
+    $rest = $db->query("SELECT COUNT(*)
+                        FROM movies
+                        WHERE (movieUpdated IS NULL) AND (movieAdult=0) AND (movieVideo=0)");
+    $rest = $rest->fetch_row();
+    if ($rest[0]) {
+      echo $rest[0]." ".number_format(($rest[0]/$complete)*100,5,'.',',')."%: ";
+      $update = $db->query("SELECT movieId
+                            FROM (
+                              SELECT movieId
+                              FROM movies
+                              WHERE (movieUpdated IS NULL) AND (movieAdult=0) AND (movieVideo=0)
+                              ORDER BY moviePopularity
+                              DESC LIMIT 100
+                            ) AS temp
+                            ORDER BY RAND()
+                            LIMIT 1");
+      $update = $update->fetch_row();
+      if (($movie = getMovie($update[0])) || ($movie = getMovie($update[0]))) {
         updateMovie($movie);
         echo $movie->title." (Voted: ".($movie->vote_average).", Popularity: ".number_format($movie->popularity,3,'.',',').")\n";
       } else {
-        $db->query("UPDATE movies SET movieUpdated=NULL WHERE movieId=".$update['movieId']);
-        echo "API-Error\n";
+        $db->query("UPDATE movies SET movieUpdated=DATE_ADD(NOW(),INTERVAL 1 MONTH) WHERE movieId=".$update[0]);
+        echo "API-Error ID ".$update[0]."\n";
       }
-    }
-    echo "Updating temporary table...\n";
-    updateTempMovies();
-  }
+    } else
+      break;
+  } while (true);
+  echo "Updating temporary table...\n";
+  updateTempMovies();
 
   // get list of updated series
   //$updates = getTvUpdates();
