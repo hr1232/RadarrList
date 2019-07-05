@@ -15,7 +15,6 @@
     $rows = array();
     $rows2 = array();
     foreach ($json as $value) {
-      $row = array();
       $row[] = $value->id;
       if (isset($value->name) && strlen($value->name))
         $row[] = "'".$db->escape_string($value->name)."'";
@@ -29,6 +28,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO collections (collectionId, collectionTitle) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE collectionTitle=VALUES(collectionTitle)");
@@ -69,6 +69,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO companies (companyId, companyName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE companyName=VALUES(companyName)");
@@ -78,7 +79,7 @@
     if ($temp->num_rows) {
       $images = $db->query("SELECT companyLogo
                             FROM t
-                            LEFT JOIN collections ON t.tId=companies.companyId");
+                            LEFT JOIN companies ON t.tId=companies.companyId");
       while ($image = $images->fetch_row())
         delImage($image[0]);
       $db->query("DELETE companies
@@ -109,6 +110,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO keywords (keywordId, keywordName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE keywordName=VALUES(keywordName)");
@@ -144,6 +146,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO networks (networkId, networkName) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE networkName=VALUES(networkName)");
@@ -188,6 +191,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO persons (personId, personName, personPopularity, personAdult) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE personName=VALUES(personName), personPopularity=VALUES(personPopularity), personAdult=VALUES(personAdult)");
@@ -233,6 +237,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO series (seriesId, seriesOriginalTitle, seriesPopularity) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE seriesOriginalTitle=VALUES(seriesOriginalTitle), seriesPopularity=VALUES(seriesPopularity)");
@@ -280,6 +285,7 @@
         $rows = array();
         $rows2 = array();
       }
+      unset($row);
     }
     if (count($rows) > 0) {
       $db->query("INSERT INTO movies (movieId, movieOriginalTitle, moviePopularity, movieAdult, movieVideo) VALUES ".implode(', ',$rows)." ON DUPLICATE KEY UPDATE movieOriginalTitle=VALUES(movieOriginalTitle), moviePopularity=VALUES(moviePopularity), movieAdult=VALUES(movieAdult), movieVideo=VALUES(movieVideo)");

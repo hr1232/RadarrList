@@ -14,8 +14,7 @@
   $updates = getMovieUpdates(50);
   if (is_array($updates) && count($updates)) {
     foreach ($updates as $update) {
-      print_r($update);
-      if (($movie = getMovie($update)) || ($movie = getMovie($update)))
+      if ($movie = getMovie($update))
         updateMovie($movie);
       else
         $db->query("UPDATE movies SET movieUpdated=DATE_ADD(NOW,INTERVAL 1 MONTH) WHERE movieId=".$update);

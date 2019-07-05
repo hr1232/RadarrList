@@ -21,7 +21,7 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
   // build and execute sql query
-  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster
+  $sql = "SELECT movieImdb, movieTitle, movieCollection, moviePoster
           FROM tempMovies
           WHERE 1";
   if (isset($_GET['lang']) && (strlen($_GET['lang']) == 2)) {
@@ -75,7 +75,7 @@
       $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
     else
       $row['moviePoster'] = null;
-    $movies[] = array('title' => $row['movieOriginalTitle'],
+    $movies[] = array('title' => $row['movieTitle'],
                       'imdb_id' => $row['movieImdb'],
                       'poster_url' => $row['moviePoster']);
     if (isset($GET['collections']) && ($GET['collections'] == 1) && is_numeric($row['movieCollection']) && (!in_array($row['movieCollection'],$collections)))
@@ -84,7 +84,7 @@
 
   // get rest of collections from database
   if (count($collections)) {
-    $result = $db->query("SELECT movieImdb, movieOriginalTitle, moviePoster
+    $result = $db->query("SELECT movieImdb, movieTitle, moviePoster
                           FROM tempMovies
                           WHERE (movieCollection IN (".implode(',',$collections)."))");
     while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
@@ -100,7 +100,7 @@
           $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
         else
           $row['moviePoster'] = null;
-        $movies[] = array('title' => $row['movieOriginalTitle'],
+        $movies[] = array('title' => $row['movieTitle'],
                           'imdb_id' => $row['movieImdb'],
                           'poster_url' => $row['moviePoster']);
       }

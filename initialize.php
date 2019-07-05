@@ -20,40 +20,57 @@
   $thisupdate = $thisupdate['lastUpdate'];
 
   // get list of updated movies
+  $counter = 0;
+  $start = time();
   echo "Initializing database, please wait...\n";
   $complete = $db->query("SELECT COUNT(*) FROM movies");
   $complete = $complete->fetch_row();
   $complete = $complete[0];
   do {
-    $rest = $db->query("SELECT COUNT(*)
-                        FROM movies
-                        WHERE (movieUpdated IS NULL) AND (movieAdult=0) AND (movieVideo=0)");
+    $rest = $db->query("SELECT COUNT(*) FROM _initialize");
     $rest = $rest->fetch_row();
-    if ($rest[0]) {
-      echo $rest[0]." ".number_format(($rest[0]/$complete)*100,5,'.',',')."%: ";
-      $update = $db->query("SELECT movieId
-                            FROM (
-                              SELECT movieId
-                              FROM movies
-                              WHERE (movieUpdated IS NULL) AND (movieAdult=0) AND (movieVideo=0)
-                              ORDER BY moviePopularity
-                              DESC LIMIT 100
-                            ) AS temp
-                            ORDER BY RAND()
-                            LIMIT 1");
-      $update = $update->fetch_row();
-      if (($movie = getMovie($update[0])) || ($movie = getMovie($update[0]))) {
-        updateMovie($movie);
-        echo $movie->title." (Voted: ".($movie->vote_average).", Popularity: ".number_format($movie->popularity,3,'.',',').")\n";
-      } else {
-        $db->query("UPDATE movies SET movieUpdated=DATE_ADD(NOW(),INTERVAL 1 MONTH) WHERE movieId=".$update[0]);
-        echo "API-Error ID ".$update[0]."\n";
+    $rest = $rest[0];
+    if ($rest) {
+      $updates = $db->query("SELECT movieId
+                             FROM _initialize
+                             LIMIT 50");
+      while($update = $updates->fetch_row()) {
+        echo $rest." ".number_format((($complete-$rest)/$complete)*100,4,'.',',')."% ";
+        if ($movie = getMovie($update[0])) {
+          $error = 0;
+          updateMovie($movie);
+        } else {
+          $error = 1;
+          $db->query("UPDATE movies SET movieUpdated=DATE_ADD(NOW(),INTERVAL 1 MONTH) WHERE movieId=".$update[0]);
+        }
+        $rest--;
+        $counter++;
+        $elapsed = time()-$start;
+        $speed = ceil($elapsed/$counter);
+        $togo = $speed*$rest;
+        echo "[";
+        if ($togo >= 86400) {
+          echo floor($togo/86400)."d ";
+          $togo = $togo%86400;
+        }
+        if ($togo >= 3600) {
+          echo floor($togo/3600)."h ";
+          $togo = $togo%3600;
+        }
+        if ($togo >= 60) {
+          echo floor($togo/60)."m ";
+          $togo = $togo%60;
+        }
+        echo $togo."s";
+        echo "]: ";
+        if ($error)
+          echo "API-Error ID ".$update[0]."\n";
+        else
+          echo $movie->title." (Voted: ".($movie->vote_average).", Popularity: ".number_format($movie->popularity,3,'.',',').")\n";
       }
     } else
       break;
   } while (true);
-  echo "Updating temporary table...\n";
-  updateTempMovies();
 
   // get list of updated series
   //$updates = getTvUpdates();

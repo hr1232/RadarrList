@@ -54,8 +54,11 @@
                             UNION
                             SELECT MAX(seriesUpdated) AS lastUpdate FROM series
                           ) AS temp");
-    $row = $result->fetch_array(MYSQLI_ASSOC);
-    $startTime = $row['lastUpdate'];
+    if ($result && $result->num_rows) {
+      $row = $result->fetch_array(MYSQLI_ASSOC);
+      $startTime = $row['lastUpdate'];
+    } else
+      $startTime = gmdate('Y-m-d 00:00:00');
     $list = array();
     $page = 1;
     do {
