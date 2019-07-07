@@ -8,9 +8,12 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
   $db->query("CREATE TEMPORARY TABLE t (tId bigint(20) UNSIGNED NOT NULL, PRIMARY KEY (tId)) ENGINE=MEMORY");
   
+  // remember current time
+  $thisupdate = gmdate('Y-m-d H:i:s');
 
   // inguest collections
   if ($json = getCollectionDump()) {
+    echo "Importing collection dump: ";
     $db->query("INSERT INTO t (tId) SELECT collectionId FROM collections");
     $rows = array();
     $rows2 = array();
@@ -47,10 +50,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest companies
   if ($json = getCompanyDump()) {
+    echo "Importing company dump: ";
     $db->query("INSERT INTO t (tId) SELECT companyId FROM companies");
     $rows = array();
     $rows2 = array();
@@ -88,10 +94,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest keywords
   if ($json = getKeywordDump()) {
+    echo "Importing keyword dump: ";
     $db->query("INSERT INTO t (tId) SELECT keywordId FROM keywords");
     $rows = array();
     $rows2 = array();
@@ -124,10 +133,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest tv networks
   if ($json = getNetworkDump()) {
+    echo "Importing network dump: ";
     $db->query("INSERT INTO t (tId) SELECT networkId FROM networks");
     $rows = array();
     $rows2 = array();
@@ -160,10 +172,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest people
   if ($json = getPeopleDump()) {
+    echo "Importing people dump: ";
     $db->query("INSERT INTO t (tId) SELECT personId FROM persons");
     $rows = array();
     $rows2 = array();
@@ -210,10 +225,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest tv series
   if ($json = getTvDump()) {
+    echo "Importing series dump: ";
     $db->query("INSERT INTO t (tId) SELECT seriesId FROM series");
     $rows = array();
     $rows2 = array();
@@ -251,10 +269,13 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
   // inguest movies
   if ($json = getMovieDump()) {
+    echo "Importing movie dump: ";
     $db->query("INSERT INTO t (tId) SELECT seriesId FROM series");
     $rows = array();
     $rows2 = array();
@@ -308,10 +329,27 @@
                   WHERE tId IS NOT NULL");
       $db->query("TRUNCATE TABLE t");
     }
-  }
+    echo count($json)."\n";
+  } else
+    echo "ERROR\n";
 
-  // destroy temporary table and disconnect from database
-  $db->query("DROP TABLE t");
+  // check for movie updates
+  echo "Checking API for updated movies: ";
+  $updates = getMovieUpdates(50);
+  if (is_array($updates) && count($updates)) {
+    $db->query("UPDATE movies SET movieUpdated=NULL WHERE (movieId IN (".implode(',',$updates).")) AND (movieUpdated IS NOT NULL)");
+  }
+  echo count($updates)."\n";
+
+  // check for tv updates
+  echo "Checking API for updated series: ";
+  $updates = getTvUpdates(50);
+  if (is_array($updates) && count($updates)) {
+    $db->query("UPDATE series SET seriesUpdated=NULL WHERE (seriesId IN (".implode(',',$updates).")) AND (seriesUpdated IS NOT NULL)");
+  }
+  echo count($updates)."\n";
+
+  // disconnect from database
   $db->close();
 
 ?>

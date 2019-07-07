@@ -22,18 +22,15 @@
   // get list of updated movies
   $counter = 0;
   $start = time();
-  echo "Initializing database, please wait...\n";
   $complete = $db->query("SELECT COUNT(*) FROM movies");
   $complete = $complete->fetch_row();
   $complete = $complete[0];
   do {
-    $rest = $db->query("SELECT COUNT(*) FROM _initialize");
+    $rest = $db->query("SELECT COUNT(*) FROM movies WHERE movieUpdated IS NULL");
     $rest = $rest->fetch_row();
     $rest = $rest[0];
     if ($rest) {
-      $updates = $db->query("SELECT movieId
-                             FROM _initialize
-                             LIMIT 50");
+      $updates = $db->query("SELECT movieId FROM movies WHERE (movieUpdated IS NULL) ORDER BY movieAdult ASC, movieVideo ASC, moviePopularity DESC LIMIT 50");
       while($update = $updates->fetch_row()) {
         echo $rest." ".number_format((($complete-$rest)/$complete)*100,4,'.',',')."% ";
         if ($movie = getMovie($update[0])) {
