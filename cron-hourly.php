@@ -14,11 +14,7 @@
   // update tv series
   if ($result = $db->query("SELECT seriesId FROM series WHERE seriesUpdated IS NULL ORDER BY seriesPopularity DESC LIMIT 200")) {
     if ($result->num_rows) {
-<<<<<<< HEAD
       $updates = array();
-=======
-      $update = array();
->>>>>>> bc9b6f9b897b91351e69579e8a4d881dc53689a0
       while ($row = $result->fetch_row())
         $updates[] = $row[0];
       if (is_array($updates) && count($updates)) {
@@ -38,11 +34,7 @@
   // update movies
   if ($result = $db->query("SELECT movieId FROM movies WHERE movieUpdated IS NULL ORDER BY movieVoteAverage DESC LIMIT 200")) {
     if ($result->num_rows) {
-<<<<<<< HEAD
       $updates = array();
-=======
-      $update = array();
->>>>>>> bc9b6f9b897b91351e69579e8a4d881dc53689a0
       while ($row = $result->fetch_row())
         $updates[] = $row[0];
       if (is_array($updates) && count($updates)) {
