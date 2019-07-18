@@ -28,6 +28,8 @@
                    'language' => array(),
                    'person' => array(),
                    'movie' => array(),
+                   'network' => array(),
+                   'tvgenre' => array(),
                    'series' => array());
 
   //////////////////////////////////////////////////////////
@@ -158,7 +160,6 @@
                   movieKeywords=VALUES(movieKeywords),
                   movieLanguages=VALUES(movieLanguages),
                   moviePersons=VALUES(moviePersons)");
-    $db->query("DELETE FROM tempMovies WHERE (movieUpdated IS NULL) OR (movieAdult IS NULL) OR (movieVideo IS NULL) OR (movieVideo=1) OR (movieImdb IS NULL) OR (movieImdb='')");
     return true;
   };
 
@@ -221,6 +222,41 @@
     if (is_file($imgbase."/".$image[1]."/".$image[2].$image))
       unlink($imgbase."/".$image[1]."/".$image[2].$image);
     return true;
+  }
+
+  // update a network in the database
+  function updateNetwork($network) {
+    global $db;
+    global $thisupdate;
+    global $updated;
+    $row = array();
+    $row[] = $network->id;
+    if (isset($network->name) && strlen($network->name)) {
+      $row[] = "'".$db->escape_string($network->name)."'";
+    } else
+      $row[] = "null";
+    if (isset($network->logo_path) && strlen($network->logo_path)) {
+      getImage($network->logo_path);
+      $row[] = "'".$db->escape_string($network->logo_path)."'";
+    } else
+      $row[] = "null";
+    if (isset($network->origin_country) && strlen($network->origin_country)) {
+      $db->query("INSERT IGNORE INTO countries (countryCode) VALUES ('".$network->origin_country."')");
+      $row[] = "'".$db->escape_string($network->origin_country)."'";
+    } else
+      $row[] = "null";
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT INTO networks (networkId, networkName, networkLogo, networkCountry, networkUpdated) VALUES (
+                      ".implode(', ',$row)."
+                    ) ON DUPLICATE KEY UPDATE
+                    networkName=VALUES(networkName),
+                    networkLogo=VALUES(networkLogo),
+                    networkCountry=VALUES(networkCountry),
+                    networkUpdated=VALUES(networkUpdated)")) {
+      $updated['network'][] = $network->id;
+      return true;
+    } else
+      return false;
   }
 
   // update a collection in the database
@@ -305,6 +341,29 @@
       return false;
   }
 
+  // update a tv-genre in the database
+  function updateTvgenre($genre) {
+    global $db;
+    global $thisupdate;
+    global $updated;
+    $row = array();
+    $row[] = "'".$genre->id."'";
+    if (isset($genre->name) && strlen($genre->name))
+      $row[] = "'".$db->escape_string($genre->name)."'";
+    else
+      $row[] = "null"; 
+    $row[] = "'".$thisupdate."'";
+    if ($db->query("INSERT INTO tvgenres (tvgenreId, tvgenreName, tvgenreUpdated) VALUES (
+                      ".implode(', ',$row)."
+                    ) ON DUPLICATE KEY UPDATE
+                    tvgenreName=VALUES(tvgenreName),
+                    tvgenreUpdated=VALUES(tvgenreUpdated)")) {
+      $updated['genre'][] = $genre->id;
+      return true;
+    } else
+      return false;
+  }
+
   // update a genre in the database
   function updateGenre($genre) {
     global $db;
@@ -358,6 +417,13 @@
     global $updated;
     $row = array();
     $row[] = "'".$person->id."'";
+    if (isset($person->adult) && is_bool($person->adult))
+      if ($person->adult)
+        $row[] = "true";
+      else
+        $row[] = "false";
+    else
+      $row[] = "null";
     if (isset($person->gender) && ($person->gender == 1))
       $row[] = "'f'";
     else if (isset($person->gender) && ($person->gender == 2))
@@ -369,12 +435,38 @@
       $row[] = "'".$db->escape_string($person->profile_path)."'";
     } else
       $row[] = "null";
+    if (isset($person->birthday) && strlen($person->birthday)) {
+      $row[] = "'".$db->escape_string($person->birthday)."'";
+    } else
+      $row[] = "null";
+    if (isset($person->deathday) && strlen($person->deathday)) {
+      $row[] = "'".$db->escape_string($person->deathday)."'";
+    } else
+      $row[] = "null";
+    if (isset($person->imdb_id) && strlen($person->imdb_id)) {
+      $row[] = "'".$db->escape_string($person->imdb_id)."'";
+    } else
+      $row[] = "null";
+    if (isset($person->homepage) && strlen($person->homepage)) {
+      $row[] = "'".$db->escape_string($person->homepage)."'";
+    } else
+      $row[] = "null";
+    if (isset($person->place_of_birth) && strlen($person->place_of_birth)) {
+      $row[] = "'".$db->escape_string($person->place_of_birth)."'";
+    } else
+      $row[] = "null";
     $row[] = "'".$thisupdate."'";
-    if ($db->query("INSERT INTO persons (personId, personGender, personPicture, personUpdated) VALUES (
+    if ($db->query("INSERT INTO persons (personId, personAdult, personGender, personPicture, personBirthday, personDeathday, personImdb, personHomepage, personPlaceOfBirth, personUpdated) VALUES (
                       ".implode(', ',$row)."
                     ) ON DUPLICATE KEY UPDATE
+                    personAdult=VALUES(personAdult),
                     personGender=VALUES(personGender),
                     personPicture=VALUES(personPicture),
+                    personBirthday=VALUES(personBirthday),
+                    personDeathday=VALUES(personDeathday),
+                    personImdb=VALUES(personImdb),
+                    personHomepage=VALUES(personHomepage),
+                    personPlaceOfBirth=VALUES(personPlaceOfBirth),
                     personUpdated=VALUES(personUpdated)")) {
       $updated['person'][] = $person->id;
       return true;
@@ -389,7 +481,106 @@
     global $updated;
     $db->query("INSERT IGNORE INTO series (seriesId) VALUES (".$series->id.")");
     $row = array("seriesUpdated='".$thisupdate."'");
-    if (isset($series->production_companies) && is_array($series->production_companies))
+    if (isset($series->credits->crew) && is_array($series->credits->crew) && count($series->credits->crew)) {
+      $list = array();
+      foreach ($series->credits->crew as $person) {
+        if (isset($person->job) && strlen($person->job))
+          $job = "'".$db->escape_string($person->job)."'";
+        else
+          $job = "null";
+        if (isset($person->department) && strlen($person->department))
+          $department = "'".$db->escape_string($person->department)."'";
+        else
+          $department = "null";
+        if (isset($person->order) && is_numeric($person->order))
+          $order = $person->order;
+        else
+          $order = "null";
+        $db->query("INSERT IGNORE INTO seriesPersons (seriesId, personId, personType, personJob, personDepartment, personOrder) VALUES (".$series->id.", ".$person->id.", 'crew', ".$job.", ".$department.", ".$order.")");
+        $list[] = $person->id;
+      }
+      $db->query("DELETE FROM seriesPersons WHERE seriesId =".$series->id." AND (personType='crew') AND (personId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesPersons WHERE seriesId=".$series->id);
+    if (isset($series->credits->cast) && is_array($series->credits->cast) && count($series->credits->cast)) {
+      $list = array();
+      foreach ($series->credits->cast as $person) {
+        if (isset($person->character) && strlen($person->character))
+          $character = "'".$db->escape_string($person->character)."'";
+        else
+          $character = "null";
+        if (isset($person->order) && is_numeric($person->order))
+          $order = $person->order;
+        else
+          $order = "null";
+        $db->query("INSERT IGNORE INTO seriesPersons (seriesId, personId, personType, personCharacter, personOrder) VALUES (".$series->id.", ".$person->id.", 'cast', ".$character.",".$order.")");
+        $list[] = $person->id;
+      }
+      $db->query("DELETE FROM seriesPersons WHERE seriesId =".$series->id." AND (personType='cast') AND (personId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesPersons WHERE seriesId=".$series->id);
+    if (isset($series->keywords->results) && is_array($series->keywords->results) && count($series->keywords->results)) {
+      $list = array();
+      foreach ($series->keywords->results as $keyword) {
+        $db->query("INSERT IGNORE INTO seriesKeywords (seriesId, keywordId) VALUES (".$series->id.", '".$keyword->id."')");
+        $list[] = $keyword->id;
+      }
+      $db->query("DELETE FROM seriesKeywords WHERE seriesId =".$series->id." AND (keywordId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesKeywords WHERE seriesId=".$series->id);
+    if (isset($series->genres) && is_array($series->genres) && count($series->genres)) {
+      $list = array();
+      foreach ($series->genres as $genre) {
+        if (!in_array($genre->id,$updated['tvgenre']))
+          updateTvgenre($genre);
+        $db->query("INSERT IGNORE INTO seriesGenres (seriesId, tvgenreId) VALUES (".$series->id.", '".$genre->id."')");
+        $list[] = $genre->id;
+      }
+      $db->query("DELETE FROM seriesGenres WHERE seriesId =".$series->id." AND (tvgenreId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesGenres WHERE seriesId=".$series->id);
+    if (isset($series->languages) && is_array($series->languages) && count($series->languages)) {
+      $list = array();
+      foreach ($series->languages as $language) {
+        $db->query("INSERT IGNORE INTO languages (languageCode) VALUES ('".$language."')");
+        $db->query("INSERT IGNORE INTO seriesLanguages (seriesId, languageCode) VALUES (".$series->id.", '".$language."')");
+        $list[] = $language;
+      }
+      $db->query("DELETE FROM seriesLanguages WHERE seriesId =".$series->id." AND (languageCode NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesLanguages WHERE seriesId=".$series->id);
+    if (isset($series->origin_country) && is_array($series->origin_country) && count($series->origin_country)) {
+      $list = array();
+      foreach ($series->origin_country as $country) {
+        $db->query("INSERT IGNORE INTO countries (countryCode) VALUES ('".$country."')");
+        $db->query("INSERT IGNORE INTO seriesCountries (seriesId, CountryCode) VALUES (".$series->id.", '".$country."')");
+        $list[] = $country;
+      }
+      $db->query("DELETE FROM seriesCountries WHERE seriesId =".$series->id." AND (countryCode NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesCountries WHERE seriesId=".$series->id);
+    if (isset($series->networks) && is_array($series->networks) && count($series->networks)) {
+      $list = array();
+      foreach ($series->networks as $network) {
+        if (!in_array($network->id,$updated['network']))
+          updateNetwork($network);
+        $db->query("INSERT IGNORE INTO seriesNetworks (seriesId, networkId) VALUES (".$series->id.", ".$network->id.")");
+        $list[] = $network->id;
+      }
+      $db->query("DELETE FROM seriesNetworks WHERE seriesId =".$series->id." AND (networkId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesNetworks WHERE seriesId=".$series->id);
+    if (isset($series->production_companies) && is_array($series->production_companies) && count($series->production_companies)) {
+      $list = array();
+      foreach ($series->production_companies as $company) {
+        if (!in_array($company->id,$updated['company']))
+          updateCompany($company);
+        $db->query("INSERT IGNORE INTO seriesCompanies (seriesId, companyId) VALUES (".$series->id.", ".$company->id.")");
+        $list[] = $company->id;
+      }
+      $db->query("DELETE FROM seriesCompanies WHERE seriesId =".$series->id." AND (companyId NOT IN (".implode(',',$list)."))");
+    } else
+      $db->query("DELETE FROM seriesCompanies WHERE seriesId=".$series->id);
     if (isset($series->vote_average) && is_numeric($series->vote_average))
       $row[] = "seriesVoteAverage=".$db->escape_string($series->vote_average);
     else
@@ -405,15 +596,35 @@
     if (isset($series->last_air_date) && strlen($series->last_air_date))
       $row[] = "seriesEndDate='".$db->escape_string($series->last_air_date)."'";
     else
-      $row[] = "seriesLastDate=NULL";
-    if (isset($series->number_of_seasons) && is_numeric($series->number_of_seasons))
+      $row[] = "seriesEndDate=NULL";
+    if (isset($series->number_of_seasons) && is_numeric($series->number_of_seasons) && ($series->number_of_seasons>0))
       $row[] = "seriesSeasons=".$db->escape_string($series->number_of_seasons);
     else
       $row[] = "seriesSeasons=NULL";
-    if (isset($series->number_of_episodes) && is_numeric($series->number_of_episodes))
+    if (isset($series->number_of_episodes) && is_numeric($series->number_of_episodes) && ($series->number_of_episodes>0))
       $row[] = "seriesEpisodes=".$db->escape_string($series->number_of_episodes);
     else
       $row[] = "seriesEpisodes=NULL";
+    if (isset($series->status) && strlen($series->status))
+      $row[] = "seriesStatus='".$db->escape_string($series->status)."'";
+    else
+      $row[] = "seriesStatus=NULL";
+    if (isset($series->name) && strlen($series->name))
+      $row[] = "seriesTitle='".$db->escape_string($series->name)."'";
+    else
+      $row[] = "seriesTitle=NULL";
+    if (isset($series->overview) && strlen($series->overview))
+      $row[] = "seriesOverview='".$db->escape_string($series->overview)."'";
+    else
+      $row[] = "seriesOverview=NULL";
+    if (isset($series->type) && strlen($series->type))
+      $row[] = "seriesType='".$db->escape_string($series->type)."'";
+    else
+      $row[] = "seriesType=NULL";
+    if (isset($series->homepage) && strlen($series->homepage))
+      $row[] = "seriesHomepage='".$db->escape_string($series->homepage)."'";
+    else
+      $row[] = "seriesHomepage=NULL";
     if (isset($series->original_name) && strlen($series->original_name))
       $row[] = "seriesOriginalTitle='".$db->escape_string($series->original_name)."'";
     else
@@ -425,9 +636,9 @@
       $row[] = "seriesOriginalLanguage=NULL";
     if (isset($series->in_production) && is_bool($series->in_production))
       if ($series->in_production)
-        $row[] = "seriesRunning=true";
+        $row[] = "seriesInProduction=true";
       else
-        $row[] = "seriesRunning=false";
+        $row[] = "seriesInProduction=false";
     else
       $row[] = "seriesRunning=NULL";
     if (isset($series->poster_path) && strlen($series->poster_path)) {
@@ -594,10 +805,22 @@
       $row[] = "movieReleaseDate='".$db->escape_string($movie->release_date)."'";
     else
       $row[] = "movieReleaseDate=NULL";
+    if (isset($movie->homepage) && strlen($movie->homepage))
+      $row[] = "movieHomepage='".$db->escape_string($movie->homepage)."'";
+    else
+      $row[] = "movieHomepage=NULL";
     if (isset($movie->imdb_id) && strlen($movie->imdb_id))
       $row[] = "movieImdb='".$db->escape_string($movie->imdb_id)."'";
     else
       $row[] = "movieImdb=NULL";
+    if (isset($movie->revenue) && is_numeric($movie->revenue))
+      $row[] = "movieRevenue=".$db->escape_string($movie->revenue);
+    else
+      $row[] = "movieRevenue=NULL";
+    if (isset($movie->budget) && is_numeric($movie->budget))
+      $row[] = "movieBudget=".$db->escape_string($movie->budget);
+    else
+      $row[] = "movieBudget=NULL";
     if (isset($movie->runtime) && is_numeric($movie->runtime))
       $row[] = "movieRuntime=".$db->escape_string($movie->runtime);
     else

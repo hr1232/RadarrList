@@ -69,12 +69,6 @@
       break;
   } while (true);
 
-  // get list of updated series
-  //$updates = getTvUpdates();
-
-  // get list of updated persons
-  //$updates = getPersonUpdates();
-
   // disconnect from database
   $db->close();
 

@@ -12,7 +12,7 @@
   $thisupdate = gmdate('Y-m-d H:i:s');
 
   // update tv series
-  if ($result = $db->query("SELECT seriesId FROM series WHERE seriesUpdated IS NULL ORDER BY seriesPopularity DESC LIMIT 200")) {
+  if ($result = $db->query("SELECT seriesId FROM series WHERE seriesUpdated IS NULL ORDER BY seriesVoteAverage DESC LIMIT 200")) {
     if ($result->num_rows) {
       $updates = array();
       while ($row = $result->fetch_row())
@@ -47,10 +47,11 @@
               $db->query("DELETE FROM movies WHERE movieId=".$update);
           }
         }
-        updateTempMovies();
       }
     }
   }
+  echo "Updating TempMovieTable...\n";
+  updateTempMovies();
 
   // update persons
   //$updates = getPersonUpdates();

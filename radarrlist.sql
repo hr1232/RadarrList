@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.6.6deb4
+-- version 4.9.0.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Erstellungszeit: 07. Jul 2019 um 20:55
--- Server-Version: 10.1.38-MariaDB-0+deb9u1
--- PHP-Version: 7.0.33-0+deb9u3
+-- Erstellungszeit: 18. Jul 2019 um 07:26
+-- Server-Version: 10.3.15-MariaDB-1
+-- PHP-Version: 7.3.4-2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -29,11 +29,13 @@ SET time_zone = "+00:00";
 --
 
 DROP TABLE IF EXISTS `collections`;
-CREATE TABLE `collections` (
+CREATE TABLE IF NOT EXISTS `collections` (
   `collectionId` bigint(20) UNSIGNED NOT NULL,
   `collectionTitle` varchar(255) DEFAULT NULL,
   `collectionPoster` varchar(255) DEFAULT NULL,
-  `collectionUpdated` timestamp NULL DEFAULT NULL
+  `collectionUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`collectionId`),
+  KEY `collectionUpdated` (`collectionUpdated`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all movie collections';
 
 -- --------------------------------------------------------
@@ -43,12 +45,15 @@ CREATE TABLE `collections` (
 --
 
 DROP TABLE IF EXISTS `companies`;
-CREATE TABLE `companies` (
+CREATE TABLE IF NOT EXISTS `companies` (
   `companyId` bigint(20) UNSIGNED NOT NULL,
   `companyName` varchar(255) NOT NULL,
   `companyLogo` varchar(100) DEFAULT NULL,
   `companyCountry` char(2) DEFAULT NULL,
-  `companyUpdated` timestamp NULL DEFAULT NULL
+  `companyUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`companyId`),
+  KEY `companyUpdated` (`companyUpdated`),
+  KEY `companyCountry` (`companyCountry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all production companies';
 
 -- --------------------------------------------------------
@@ -58,10 +63,12 @@ CREATE TABLE `companies` (
 --
 
 DROP TABLE IF EXISTS `countries`;
-CREATE TABLE `countries` (
+CREATE TABLE IF NOT EXISTS `countries` (
   `countryCode` char(2) NOT NULL,
   `countryName` varchar(255) DEFAULT NULL,
-  `countryUpdated` timestamp NULL DEFAULT NULL
+  `countryUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`countryCode`),
+  KEY `countryUpdated` (`countryUpdated`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all production countries';
 
 -- --------------------------------------------------------
@@ -71,10 +78,12 @@ CREATE TABLE `countries` (
 --
 
 DROP TABLE IF EXISTS `genres`;
-CREATE TABLE `genres` (
+CREATE TABLE IF NOT EXISTS `genres` (
   `genreId` bigint(20) UNSIGNED NOT NULL,
   `genreName` varchar(255) DEFAULT NULL,
-  `genreUpdated` timestamp NULL DEFAULT NULL
+  `genreUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`genreId`),
+  KEY `genreUpdated` (`genreUpdated`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all movie genres';
 
 -- --------------------------------------------------------
@@ -84,10 +93,12 @@ CREATE TABLE `genres` (
 --
 
 DROP TABLE IF EXISTS `keywords`;
-CREATE TABLE `keywords` (
+CREATE TABLE IF NOT EXISTS `keywords` (
   `keywordId` bigint(20) UNSIGNED NOT NULL,
   `keywordName` varchar(255) DEFAULT NULL,
-  `keywordUpdated` timestamp NULL DEFAULT NULL
+  `keywordUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`keywordId`),
+  KEY `keywordUpdated` (`keywordUpdated`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='keywords used for mvies and series';
 
 -- --------------------------------------------------------
@@ -97,10 +108,12 @@ CREATE TABLE `keywords` (
 --
 
 DROP TABLE IF EXISTS `languages`;
-CREATE TABLE `languages` (
+CREATE TABLE IF NOT EXISTS `languages` (
   `languageCode` char(2) NOT NULL,
   `languageName` varchar(255) DEFAULT NULL,
-  `languageUpdated` timestamp NULL DEFAULT NULL
+  `languageUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`languageCode`),
+  KEY `languageUpdated` (`languageUpdated`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='languages (original lang. and spoken lang.)';
 
 -- --------------------------------------------------------
@@ -110,25 +123,39 @@ CREATE TABLE `languages` (
 --
 
 DROP TABLE IF EXISTS `movies`;
-CREATE TABLE `movies` (
+CREATE TABLE IF NOT EXISTS `movies` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
   `movieTitle` varchar(255) DEFAULT NULL,
   `movieTagline` varchar(255) DEFAULT NULL,
   `movieOriginalTitle` varchar(255) DEFAULT NULL,
   `movieOriginalLanguage` char(2) DEFAULT NULL,
-  `movieStatus` enum('Rumored','Planned','In Production','Post Production','Released','Canceled') DEFAULT NULL,
-  `movieOverview` text,
+  `movieStatus` varchar(50) DEFAULT NULL,
+  `movieOverview` text DEFAULT NULL,
   `movieReleaseDate` date DEFAULT NULL,
-  `movieImdb` char(9) DEFAULT NULL,
+  `movieImdb` varchar(15) DEFAULT NULL,
   `movieCollection` bigint(20) UNSIGNED DEFAULT NULL,
   `moviePoster` varchar(100) DEFAULT NULL,
   `movieRuntime` smallint(5) UNSIGNED DEFAULT NULL,
-  `moviePopularity` double DEFAULT '0',
+  `moviePopularity` double DEFAULT 0,
   `movieAdult` bit(1) DEFAULT NULL,
   `movieVideo` bit(1) DEFAULT NULL,
   `movieVoteAverage` double UNSIGNED DEFAULT NULL,
   `movieVoteCount` mediumint(8) UNSIGNED DEFAULT NULL,
-  `movieUpdated` timestamp NULL DEFAULT NULL
+  `movieBudget` int(10) UNSIGNED DEFAULT NULL,
+  `movieRevenue` int(11) DEFAULT NULL,
+  `movieHomepage` varchar(255) DEFAULT NULL,
+  `movieUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`movieId`),
+  KEY `movieUpdated` (`movieUpdated`),
+  KEY `moviePopularity` (`moviePopularity`),
+  KEY `movieAdult` (`movieAdult`),
+  KEY `movieOriginalLanguage` (`movieOriginalLanguage`),
+  KEY `movieStatus` (`movieStatus`),
+  KEY `movieRuntime` (`movieRuntime`),
+  KEY `movieVoteCuunt` (`movieVoteCount`),
+  KEY `movieVoteAverage` (`movieVoteAverage`),
+  KEY `movieCollection` (`movieCollection`),
+  KEY `movieVideo` (`movieVideo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='all movies available on themoviedb.org';
 
 -- --------------------------------------------------------
@@ -138,9 +165,11 @@ CREATE TABLE `movies` (
 --
 
 DROP TABLE IF EXISTS `moviesCompanies`;
-CREATE TABLE `moviesCompanies` (
+CREATE TABLE IF NOT EXISTS `moviesCompanies` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
-  `companyId` bigint(20) UNSIGNED NOT NULL
+  `companyId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`movieId`,`companyId`),
+  KEY `moviesCompanies_ibfk_2` (`companyId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='production companies for any given movie';
 
 -- --------------------------------------------------------
@@ -150,9 +179,11 @@ CREATE TABLE `moviesCompanies` (
 --
 
 DROP TABLE IF EXISTS `moviesCountries`;
-CREATE TABLE `moviesCountries` (
+CREATE TABLE IF NOT EXISTS `moviesCountries` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
-  `countryCode` char(2) NOT NULL
+  `countryCode` char(2) NOT NULL,
+  PRIMARY KEY (`movieId`,`countryCode`),
+  KEY `moviesCountries_ibfk_1` (`countryCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='production countries for any given movie';
 
 -- --------------------------------------------------------
@@ -162,9 +193,11 @@ CREATE TABLE `moviesCountries` (
 --
 
 DROP TABLE IF EXISTS `moviesGenres`;
-CREATE TABLE `moviesGenres` (
+CREATE TABLE IF NOT EXISTS `moviesGenres` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
-  `genreId` bigint(20) UNSIGNED NOT NULL
+  `genreId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`movieId`,`genreId`),
+  KEY `genreId` (`genreId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='genres for any given movie';
 
 -- --------------------------------------------------------
@@ -174,9 +207,11 @@ CREATE TABLE `moviesGenres` (
 --
 
 DROP TABLE IF EXISTS `moviesKeywords`;
-CREATE TABLE `moviesKeywords` (
+CREATE TABLE IF NOT EXISTS `moviesKeywords` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
-  `keywordId` bigint(20) UNSIGNED NOT NULL
+  `keywordId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`movieId`,`keywordId`),
+  KEY `keywordId` (`keywordId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -186,9 +221,11 @@ CREATE TABLE `moviesKeywords` (
 --
 
 DROP TABLE IF EXISTS `moviesLanguages`;
-CREATE TABLE `moviesLanguages` (
+CREATE TABLE IF NOT EXISTS `moviesLanguages` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
-  `languageCode` char(2) NOT NULL
+  `languageCode` char(2) NOT NULL,
+  PRIMARY KEY (`movieId`,`languageCode`),
+  KEY `moviesLanguages_ibfk_1` (`languageCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='spoken languages for any given movie';
 
 -- --------------------------------------------------------
@@ -198,14 +235,17 @@ CREATE TABLE `moviesLanguages` (
 --
 
 DROP TABLE IF EXISTS `moviesPersons`;
-CREATE TABLE `moviesPersons` (
+CREATE TABLE IF NOT EXISTS `moviesPersons` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
   `personId` bigint(20) UNSIGNED NOT NULL,
   `personType` enum('cast','crew') NOT NULL DEFAULT 'cast',
   `personCharacter` varchar(255) DEFAULT NULL,
   `personDepartment` varchar(255) DEFAULT NULL,
   `personJob` varchar(255) DEFAULT NULL,
-  `personOrder` mediumint(8) UNSIGNED DEFAULT NULL
+  `personOrder` mediumint(8) UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (`movieId`,`personId`),
+  KEY `personId` (`personId`),
+  KEY `personType` (`personType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -215,10 +255,16 @@ CREATE TABLE `moviesPersons` (
 --
 
 DROP TABLE IF EXISTS `networks`;
-CREATE TABLE `networks` (
+CREATE TABLE IF NOT EXISTS `networks` (
   `networkId` bigint(20) UNSIGNED NOT NULL,
   `networkName` varchar(255) DEFAULT NULL,
-  `networkUpdated` timestamp NULL DEFAULT NULL
+  `networkLogo` varchar(100) DEFAULT NULL,
+  `networkCountry` char(2) DEFAULT NULL,
+  `networkUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`networkId`),
+  KEY `networkUpdated` (`networkUpdated`),
+  KEY `networkLogo` (`networkLogo`),
+  KEY `networkCountry` (`networkCountry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all tv networks';
 
 -- --------------------------------------------------------
@@ -228,14 +274,27 @@ CREATE TABLE `networks` (
 --
 
 DROP TABLE IF EXISTS `persons`;
-CREATE TABLE `persons` (
+CREATE TABLE IF NOT EXISTS `persons` (
   `personId` bigint(20) UNSIGNED NOT NULL,
   `personName` varchar(255) DEFAULT NULL,
+  `personBirthday` date DEFAULT NULL,
+  `personDeathday` date DEFAULT NULL,
+  `personPlaceOfBirth` varchar(255) DEFAULT NULL,
+  `personImdb` varchar(15) DEFAULT NULL,
+  `personBiography` text DEFAULT NULL,
   `personPicture` varchar(100) DEFAULT NULL,
   `personGender` enum('f','m') DEFAULT NULL,
-  `personPopularity` double NOT NULL DEFAULT '0',
+  `personPopularity` double NOT NULL DEFAULT 0,
   `personAdult` bit(1) DEFAULT NULL,
-  `personUpdated` timestamp NULL DEFAULT NULL
+  `personHomepage` varchar(255) DEFAULT NULL,
+  `personUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`personId`),
+  KEY `personPopularity` (`personPopularity`),
+  KEY `personUpdated` (`personUpdated`),
+  KEY `persongender` (`personGender`),
+  KEY `personAdult` (`personAdult`),
+  KEY `personBirthday` (`personBirthday`),
+  KEY `personDeathday` (`personDeathday`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='list of all persons involved in any way with movies or series';
 
 -- --------------------------------------------------------
@@ -245,20 +304,36 @@ CREATE TABLE `persons` (
 --
 
 DROP TABLE IF EXISTS `series`;
-CREATE TABLE `series` (
+CREATE TABLE IF NOT EXISTS `series` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
+  `seriesTitle` varchar(255) DEFAULT NULL,
+  `seriesOverview` text DEFAULT NULL,
   `seriesOriginalTitle` varchar(255) DEFAULT NULL,
   `seriesOriginalLanguage` char(2) DEFAULT NULL,
-  `seriesPopularity` double NOT NULL DEFAULT '0',
+  `seriesPopularity` double NOT NULL DEFAULT 0,
   `seriesPoster` varchar(100) NOT NULL,
   `seriesStartDate` date DEFAULT NULL,
   `seriesEndDate` date DEFAULT NULL,
-  `seriesSeasons` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
-  `seriesEpisodes` smallint(9) UNSIGNED NOT NULL DEFAULT '0',
+  `seriesSeasons` tinyint(3) UNSIGNED DEFAULT NULL,
+  `seriesEpisodes` smallint(9) UNSIGNED DEFAULT NULL,
   `seriesVoteAverage` double UNSIGNED DEFAULT NULL,
   `seriesVoteCount` mediumint(9) UNSIGNED DEFAULT NULL,
-  `seriesRunning` tinyint(1) DEFAULT NULL,
-  `seriesUpdated` timestamp NULL DEFAULT NULL
+  `seriesInProduction` tinyint(1) DEFAULT NULL,
+  `seriesStatus` varchar(50) DEFAULT NULL,
+  `seriesType` varchar(50) DEFAULT NULL,
+  `seriesHomepage` varchar(255) DEFAULT NULL,
+  `seriesUpdated` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`seriesId`),
+  KEY `seriesPopularity` (`seriesPopularity`),
+  KEY `seriesUpdated` (`seriesUpdated`),
+  KEY `seriesOriginalLanguage` (`seriesOriginalLanguage`),
+  KEY `seriesVoteAverage` (`seriesVoteAverage`),
+  KEY `seriesVoteCount` (`seriesVoteCount`),
+  KEY `seriesEpisodes` (`seriesEpisodes`),
+  KEY `seriesSeasons` (`seriesSeasons`),
+  KEY `seriesRunning` (`seriesInProduction`),
+  KEY `seriesStatus` (`seriesStatus`),
+  KEY `seriesType` (`seriesType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='all tv series available on themoviedb.org';
 
 -- --------------------------------------------------------
@@ -268,9 +343,11 @@ CREATE TABLE `series` (
 --
 
 DROP TABLE IF EXISTS `seriesCompanies`;
-CREATE TABLE `seriesCompanies` (
+CREATE TABLE IF NOT EXISTS `seriesCompanies` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `companyId` bigint(20) UNSIGNED NOT NULL
+  `companyId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`seriesId`,`companyId`),
+  KEY `seriesCompanies_ibfk_2` (`companyId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -280,9 +357,11 @@ CREATE TABLE `seriesCompanies` (
 --
 
 DROP TABLE IF EXISTS `seriesCountries`;
-CREATE TABLE `seriesCountries` (
+CREATE TABLE IF NOT EXISTS `seriesCountries` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `countryCode` char(2) NOT NULL
+  `countryCode` char(2) NOT NULL,
+  PRIMARY KEY (`seriesId`,`countryCode`),
+  KEY `countryCode` (`countryCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -292,9 +371,12 @@ CREATE TABLE `seriesCountries` (
 --
 
 DROP TABLE IF EXISTS `seriesGenres`;
-CREATE TABLE `seriesGenres` (
+CREATE TABLE IF NOT EXISTS `seriesGenres` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `tvgenreId` bigint(20) UNSIGNED NOT NULL
+  `tvgenreId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`tvgenreId`,`seriesId`),
+  KEY `genreId` (`tvgenreId`),
+  KEY `seriesId` (`seriesId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -304,9 +386,11 @@ CREATE TABLE `seriesGenres` (
 --
 
 DROP TABLE IF EXISTS `seriesKeywords`;
-CREATE TABLE `seriesKeywords` (
+CREATE TABLE IF NOT EXISTS `seriesKeywords` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `keywordId` bigint(20) UNSIGNED NOT NULL
+  `keywordId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`seriesId`,`keywordId`),
+  KEY `keywordId` (`keywordId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -316,9 +400,11 @@ CREATE TABLE `seriesKeywords` (
 --
 
 DROP TABLE IF EXISTS `seriesLanguages`;
-CREATE TABLE `seriesLanguages` (
+CREATE TABLE IF NOT EXISTS `seriesLanguages` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `languageCode` char(2) NOT NULL
+  `languageCode` char(2) NOT NULL,
+  PRIMARY KEY (`seriesId`,`languageCode`),
+  KEY `languageCode` (`languageCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -328,9 +414,11 @@ CREATE TABLE `seriesLanguages` (
 --
 
 DROP TABLE IF EXISTS `seriesNetworks`;
-CREATE TABLE `seriesNetworks` (
+CREATE TABLE IF NOT EXISTS `seriesNetworks` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
-  `networkId` bigint(20) UNSIGNED NOT NULL
+  `networkId` bigint(20) UNSIGNED NOT NULL,
+  PRIMARY KEY (`seriesId`,`networkId`),
+  KEY `networkId` (`networkId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -340,14 +428,17 @@ CREATE TABLE `seriesNetworks` (
 --
 
 DROP TABLE IF EXISTS `seriesPersons`;
-CREATE TABLE `seriesPersons` (
+CREATE TABLE IF NOT EXISTS `seriesPersons` (
   `seriesId` bigint(20) UNSIGNED NOT NULL,
   `personId` bigint(20) UNSIGNED NOT NULL,
   `personType` enum('cast','crew') NOT NULL DEFAULT 'cast',
   `personCharacter` varchar(255) DEFAULT NULL,
   `personDepartment` varchar(255) DEFAULT NULL,
   `personJob` varchar(255) DEFAULT NULL,
-  `personOrder` mediumint(8) UNSIGNED NOT NULL
+  `personOrder` mediumint(8) UNSIGNED NOT NULL,
+  PRIMARY KEY (`seriesId`,`personId`),
+  KEY `personId` (`personId`),
+  KEY `personType` (`personType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -357,33 +448,42 @@ CREATE TABLE `seriesPersons` (
 --
 
 DROP TABLE IF EXISTS `tempMovies`;
-CREATE TABLE `tempMovies` (
+CREATE TABLE IF NOT EXISTS `tempMovies` (
   `movieId` bigint(20) UNSIGNED NOT NULL,
   `movieTitle` varchar(255) DEFAULT NULL,
   `movieTagline` varchar(255) DEFAULT NULL,
   `movieOriginalTitle` varchar(255) DEFAULT NULL,
   `movieOriginalLanguage` char(2) DEFAULT NULL,
   `movieStatus` enum('Rumored','Planned','In Production','Post Production','Released','Canceled') DEFAULT NULL,
-  `movieOverview` text,
+  `movieOverview` text DEFAULT NULL,
   `movieReleaseDate` date DEFAULT NULL,
   `movieImdb` char(9) DEFAULT NULL,
   `movieCollection` bigint(20) UNSIGNED DEFAULT NULL,
   `moviePoster` varchar(100) DEFAULT NULL,
   `movieRuntime` smallint(5) UNSIGNED DEFAULT NULL,
-  `moviePopularity` double DEFAULT '0',
+  `moviePopularity` double DEFAULT 0,
   `movieAdult` bit(1) DEFAULT NULL,
   `movieVideo` bit(1) DEFAULT NULL,
   `movieVoteAverage` double DEFAULT NULL,
   `movieVoteCount` mediumint(8) UNSIGNED DEFAULT NULL,
+  `movieBudget` int(10) UNSIGNED DEFAULT NULL,
+  `movieRevenue` int(11) DEFAULT NULL,
+  `movieHomepage` varchar(255) DEFAULT NULL,
   `movieUpdated` timestamp NULL DEFAULT NULL,
   `movieCollectionTitle` varchar(255) DEFAULT NULL,
   `movieCollectionPoster` varchar(255) DEFAULT NULL,
-  `movieCompanies` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `movieCountries` text,
-  `movieGenres` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `movieKeywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `movieLanguages` text,
-  `moviePersons` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+  `movieCompanies` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `movieCountries` text DEFAULT NULL,
+  `movieGenres` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `movieKeywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `movieLanguages` text DEFAULT NULL,
+  `moviePersons` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`movieId`),
+  KEY `movieOriginalLanguage` (`movieOriginalLanguage`),
+  KEY `movieStatus` (`movieStatus`),
+  KEY `movieReleaseDate` (`movieReleaseDate`),
+  KEY `movieVoteAverage` (`movieVoteAverage`),
+  KEY `movieVoteCount` (`movieVoteCount`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -393,216 +493,12 @@ CREATE TABLE `tempMovies` (
 --
 
 DROP TABLE IF EXISTS `tvgenres`;
-CREATE TABLE `tvgenres` (
+CREATE TABLE IF NOT EXISTS `tvgenres` (
   `tvgenreId` bigint(20) UNSIGNED NOT NULL,
   `tvgenreName` varchar(255) NOT NULL,
-  `tvgenreUpdated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `tvgenreUpdated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`tvgenreId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Indizes der exportierten Tabellen
---
-
---
--- Indizes für die Tabelle `collections`
---
-ALTER TABLE `collections`
-  ADD PRIMARY KEY (`collectionId`),
-  ADD KEY `collectionUpdated` (`collectionUpdated`);
-
---
--- Indizes für die Tabelle `companies`
---
-ALTER TABLE `companies`
-  ADD PRIMARY KEY (`companyId`),
-  ADD KEY `companyUpdated` (`companyUpdated`),
-  ADD KEY `companyCountry` (`companyCountry`);
-
---
--- Indizes für die Tabelle `countries`
---
-ALTER TABLE `countries`
-  ADD PRIMARY KEY (`countryCode`),
-  ADD KEY `countryUpdated` (`countryUpdated`);
-
---
--- Indizes für die Tabelle `genres`
---
-ALTER TABLE `genres`
-  ADD PRIMARY KEY (`genreId`),
-  ADD KEY `genreUpdated` (`genreUpdated`);
-
---
--- Indizes für die Tabelle `keywords`
---
-ALTER TABLE `keywords`
-  ADD PRIMARY KEY (`keywordId`),
-  ADD KEY `keywordUpdated` (`keywordUpdated`);
-
---
--- Indizes für die Tabelle `languages`
---
-ALTER TABLE `languages`
-  ADD PRIMARY KEY (`languageCode`),
-  ADD KEY `languageUpdated` (`languageUpdated`);
-
---
--- Indizes für die Tabelle `movies`
---
-ALTER TABLE `movies`
-  ADD PRIMARY KEY (`movieId`),
-  ADD KEY `movieUpdated` (`movieUpdated`),
-  ADD KEY `moviePopularity` (`moviePopularity`),
-  ADD KEY `movieAdult` (`movieAdult`),
-  ADD KEY `movieOriginalLanguage` (`movieOriginalLanguage`),
-  ADD KEY `movieStatus` (`movieStatus`),
-  ADD KEY `movieRuntime` (`movieRuntime`),
-  ADD KEY `movieVoteCuunt` (`movieVoteCount`),
-  ADD KEY `movieVoteAverage` (`movieVoteAverage`),
-  ADD KEY `movieCollection` (`movieCollection`),
-  ADD KEY `movieVideo` (`movieVideo`);
-
---
--- Indizes für die Tabelle `moviesCompanies`
---
-ALTER TABLE `moviesCompanies`
-  ADD PRIMARY KEY (`movieId`,`companyId`),
-  ADD KEY `moviesCompanies_ibfk_2` (`companyId`);
-
---
--- Indizes für die Tabelle `moviesCountries`
---
-ALTER TABLE `moviesCountries`
-  ADD PRIMARY KEY (`movieId`,`countryCode`),
-  ADD KEY `moviesCountries_ibfk_1` (`countryCode`);
-
---
--- Indizes für die Tabelle `moviesGenres`
---
-ALTER TABLE `moviesGenres`
-  ADD PRIMARY KEY (`movieId`,`genreId`),
-  ADD KEY `genreId` (`genreId`);
-
---
--- Indizes für die Tabelle `moviesKeywords`
---
-ALTER TABLE `moviesKeywords`
-  ADD PRIMARY KEY (`movieId`,`keywordId`),
-  ADD KEY `keywordId` (`keywordId`);
-
---
--- Indizes für die Tabelle `moviesLanguages`
---
-ALTER TABLE `moviesLanguages`
-  ADD PRIMARY KEY (`movieId`,`languageCode`),
-  ADD KEY `moviesLanguages_ibfk_1` (`languageCode`);
-
---
--- Indizes für die Tabelle `moviesPersons`
---
-ALTER TABLE `moviesPersons`
-  ADD PRIMARY KEY (`movieId`,`personId`),
-  ADD KEY `personId` (`personId`),
-  ADD KEY `personType` (`personType`);
-
---
--- Indizes für die Tabelle `networks`
---
-ALTER TABLE `networks`
-  ADD PRIMARY KEY (`networkId`),
-  ADD KEY `networkUpdated` (`networkUpdated`);
-
---
--- Indizes für die Tabelle `persons`
---
-ALTER TABLE `persons`
-  ADD PRIMARY KEY (`personId`),
-  ADD KEY `personPopularity` (`personPopularity`),
-  ADD KEY `personUpdated` (`personUpdated`),
-  ADD KEY `persongender` (`personGender`),
-  ADD KEY `personAdult` (`personAdult`);
-
---
--- Indizes für die Tabelle `series`
---
-ALTER TABLE `series`
-  ADD PRIMARY KEY (`seriesId`),
-  ADD KEY `seriesPopularity` (`seriesPopularity`),
-  ADD KEY `seriesUpdated` (`seriesUpdated`),
-  ADD KEY `seriesOriginalLanguage` (`seriesOriginalLanguage`),
-  ADD KEY `seriesVoteAverage` (`seriesVoteAverage`),
-  ADD KEY `seriesVoteCount` (`seriesVoteCount`),
-  ADD KEY `seriesEpisodes` (`seriesEpisodes`),
-  ADD KEY `seriesSeasons` (`seriesSeasons`),
-  ADD KEY `seriesRunning` (`seriesRunning`);
-
---
--- Indizes für die Tabelle `seriesCompanies`
---
-ALTER TABLE `seriesCompanies`
-  ADD PRIMARY KEY (`seriesId`,`companyId`),
-  ADD KEY `seriesCompanies_ibfk_2` (`companyId`);
-
---
--- Indizes für die Tabelle `seriesCountries`
---
-ALTER TABLE `seriesCountries`
-  ADD PRIMARY KEY (`seriesId`,`countryCode`),
-  ADD KEY `countryCode` (`countryCode`);
-
---
--- Indizes für die Tabelle `seriesGenres`
---
-ALTER TABLE `seriesGenres`
-  ADD PRIMARY KEY (`tvgenreId`,`seriesId`),
-  ADD KEY `genreId` (`tvgenreId`),
-  ADD KEY `seriesId` (`seriesId`);
-
---
--- Indizes für die Tabelle `seriesKeywords`
---
-ALTER TABLE `seriesKeywords`
-  ADD PRIMARY KEY (`seriesId`,`keywordId`),
-  ADD KEY `keywordId` (`keywordId`);
-
---
--- Indizes für die Tabelle `seriesLanguages`
---
-ALTER TABLE `seriesLanguages`
-  ADD PRIMARY KEY (`seriesId`,`languageCode`),
-  ADD KEY `languageCode` (`languageCode`);
-
---
--- Indizes für die Tabelle `seriesNetworks`
---
-ALTER TABLE `seriesNetworks`
-  ADD PRIMARY KEY (`seriesId`,`networkId`),
-  ADD KEY `networkId` (`networkId`);
-
---
--- Indizes für die Tabelle `seriesPersons`
---
-ALTER TABLE `seriesPersons`
-  ADD PRIMARY KEY (`seriesId`,`personId`),
-  ADD KEY `personId` (`personId`),
-  ADD KEY `personType` (`personType`);
-
---
--- Indizes für die Tabelle `tempMovies`
---
-ALTER TABLE `tempMovies`
-  ADD PRIMARY KEY (`movieId`),
-  ADD KEY `movieOriginalLanguage` (`movieOriginalLanguage`),
-  ADD KEY `movieStatus` (`movieStatus`),
-  ADD KEY `movieReleaseDate` (`movieReleaseDate`),
-  ADD KEY `movieVoteAverage` (`movieVoteAverage`),
-  ADD KEY `movieVoteCount` (`movieVoteCount`);
-
---
--- Indizes für die Tabelle `tvgenres`
---
-ALTER TABLE `tvgenres`
-  ADD PRIMARY KEY (`tvgenreId`);
 
 --
 -- Constraints der exportierten Tabellen
@@ -663,6 +559,12 @@ ALTER TABLE `moviesPersons`
   ADD CONSTRAINT `moviesPersons_ibfk_2` FOREIGN KEY (`personId`) REFERENCES `persons` (`personId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints der Tabelle `networks`
+--
+ALTER TABLE `networks`
+  ADD CONSTRAINT `networks_ibfk_1` FOREIGN KEY (`networkCountry`) REFERENCES `countries` (`countryCode`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints der Tabelle `series`
 --
 ALTER TABLE `series`
@@ -716,130 +618,6 @@ ALTER TABLE `seriesNetworks`
 ALTER TABLE `seriesPersons`
   ADD CONSTRAINT `seriesPersons_ibfk_1` FOREIGN KEY (`seriesId`) REFERENCES `series` (`seriesId`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `seriesPersons_ibfk_2` FOREIGN KEY (`personId`) REFERENCES `persons` (`personId`) ON DELETE CASCADE ON UPDATE CASCADE;
-
-
---
--- Metadaten
---
-USE `phpmyadmin`;
-
---
--- Metadaten für Tabelle collections
---
-
---
--- Metadaten für Tabelle companies
---
-
---
--- Metadaten für Tabelle countries
---
-
---
--- Metadaten für Tabelle genres
---
-
---
--- Metadaten für Tabelle keywords
---
-
---
--- Metadaten für Tabelle languages
---
-
---
--- Metadaten für Tabelle movies
---
-
---
--- Daten für Tabelle `pma__table_uiprefs`
---
-
-INSERT INTO `pma__table_uiprefs` (`username`, `db_name`, `table_name`, `prefs`, `last_update`) VALUES
-('heikorichter', 'radarrlist', 'movies', '{\"sorted_col\":\"`movies`.`movieId` ASC\"}', '2019-07-05 17:48:18');
-
---
--- Metadaten für Tabelle moviesCompanies
---
-
---
--- Metadaten für Tabelle moviesCountries
---
-
---
--- Metadaten für Tabelle moviesGenres
---
-
---
--- Metadaten für Tabelle moviesKeywords
---
-
---
--- Metadaten für Tabelle moviesLanguages
---
-
---
--- Metadaten für Tabelle moviesPersons
---
-
---
--- Metadaten für Tabelle networks
---
-
---
--- Metadaten für Tabelle persons
---
-
---
--- Metadaten für Tabelle series
---
-
---
--- Daten für Tabelle `pma__table_uiprefs`
---
-
-INSERT INTO `pma__table_uiprefs` (`username`, `db_name`, `table_name`, `prefs`, `last_update`) VALUES
-('heikorichter', 'radarrlist', 'series', '{\"sorted_col\":\"`seriesPopularity`  DESC\"}', '2019-07-07 18:38:18');
-
---
--- Metadaten für Tabelle seriesCompanies
---
-
---
--- Metadaten für Tabelle seriesCountries
---
-
---
--- Metadaten für Tabelle seriesGenres
---
-
---
--- Metadaten für Tabelle seriesKeywords
---
-
---
--- Metadaten für Tabelle seriesLanguages
---
-
---
--- Metadaten für Tabelle seriesNetworks
---
-
---
--- Metadaten für Tabelle seriesPersons
---
-
---
--- Metadaten für Tabelle tempMovies
---
-
---
--- Metadaten für Tabelle tvgenres
---
-
---
--- Metadaten für Datenbank radarrlist
---
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
