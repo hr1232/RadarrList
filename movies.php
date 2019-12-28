@@ -21,9 +21,9 @@
   $db = new mysqli($db['host'],$db['user'],$db['pass'],$db['db'],$db['port'],$db['sock']);
 
   // build and execute sql query
-  $sql = "SELECT movieImdb, movieTitle, movieCollection, moviePoster
+  $sql = "SELECT movieImdb, movieOriginalTitle, movieCollection, moviePoster
           FROM tempMovies
-          WHERE 1";
+          WHERE (movieImdb IS NOT NULL) AND (movieOriginalTitle IS NOT NULL)";
   if (isset($_GET['lang']) && (strlen($_GET['lang']) == 2)) {
     $_GET['lang'] = $db->escape_string($_GET['lang']);
     $sql .= " AND (movieOriginalLanguage IS NOT NULL) AND (movieOriginalLanguage='".$_GET['lang']."')";
@@ -75,7 +75,7 @@
       $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
     else
       $row['moviePoster'] = null;
-    $movies[] = array('title' => $row['movieTitle'],
+    $movies[] = array('title' => $row['movieOriginalTitle'],
                       'imdb_id' => $row['movieImdb'],
                       'poster_url' => $row['moviePoster']);
     if (isset($GET['collections']) && ($GET['collections'] == 1) && is_numeric($row['movieCollection']) && (!in_array($row['movieCollection'],$collections)))
@@ -84,9 +84,9 @@
 
   // get rest of collections from database
   if (count($collections)) {
-    $result = $db->query("SELECT movieImdb, movieTitle, moviePoster
+    $result = $db->query("SELECT movieImdb, movieOriginalTitle, moviePoster
                           FROM tempMovies
-                          WHERE (movieCollection IN (".implode(',',$collections)."))");
+                          WHERE (movieImdb IS NOT NULL) AND (movieOriginalTitle IS NOT NULL) AND (movieCollection IN (".implode(',',$collections)."))");
     while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
       $exist = false;
       for ($i=0;$i<count($movies);$i++) {
@@ -100,7 +100,7 @@
           $row['moviePoster'] = 'https://www.heikorichter.name/movieimg/'.$row['moviePoster'][1].'/'.$row['moviePoster'][2].$row['moviePoster'];
         else
           $row['moviePoster'] = null;
-        $movies[] = array('title' => $row['movieTitle'],
+        $movies[] = array('title' => $row['movieOriginalTitle'],
                           'imdb_id' => $row['movieImdb'],
                           'poster_url' => $row['moviePoster']);
       }

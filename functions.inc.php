@@ -160,6 +160,12 @@
                   movieKeywords=VALUES(movieKeywords),
                   movieLanguages=VALUES(movieLanguages),
                   moviePersons=VALUES(moviePersons)");
+    if ($result = $db->query("SELECT DISTINCT movieId FROM blacklistKeywords LEFT JOIN moviesKeywords on blacklistKeywords.keywordId=moviesKeywords.keywordId WHERE movieId IS NOT NULL ORDER BY movieId ASC"))
+      if ($result->num_rows) {
+        while ($row = $result->fetch_row())
+          $ids[] = $row[0];
+        $db->query("DELETE FROM tempMovies WHERE movieId IN (".implode(',',$ids).")");
+      }
     return true;
   };
 
